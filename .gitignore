@@ -7,3 +7,6 @@ pylib
 
 # clean
 clean
+
+# output files
+cg_water/water.dcd
