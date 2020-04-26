@@ -8,5 +8,6 @@ pylib
 # clean
 clean
 
-# output files
+# trajectory files
 cg_water/water.dcd
+cg_water/water.lammpstrj
