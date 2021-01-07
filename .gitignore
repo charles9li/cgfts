@@ -1,13 +1,9 @@
 # IntelliJ files
 .idea
-srel.iml
+sim_wrapper.iml
 
-# pylib
-pylib
+# data
+data
 
-# clean
-clean
-
-# trajectory files
-cg_water/water.dcd
-cg_water/water.lammpstrj
+# old files
+old/*
