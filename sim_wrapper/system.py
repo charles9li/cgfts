@@ -246,3 +246,9 @@ class SystemRun(BaseSystem):
         integrator.Method.Thermostat = integrator.Method.ThermostatLangevin
         integrator.Method.LangevinGamma = 1.0
         integrator.Method.Barostat = integrator.Method.BarostatMonteCarlo
+
+    def run(self, steps_equil, steps_prod, write_freq):
+        sim.export.omm.MakeOpenMMTraj(self._system, DelTempFiles=False, Prefix="system_",
+                                      TrajFile="traj.dcd", Verbose=True,
+                                      NStepsEquil=steps_equil, NStepsProd=steps_prod,
+                                      WriteFreq=write_freq)
