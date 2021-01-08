@@ -7,3 +7,6 @@ data
 
 # old files
 old/*
+
+# pyc files
+*.pyc
