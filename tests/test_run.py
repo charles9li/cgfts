@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-from sim_wrapper import *
+from sim_wrapper.system import *
 
 
 class TestRun(unittest.TestCase):
