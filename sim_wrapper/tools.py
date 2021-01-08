@@ -51,16 +51,11 @@ class ComputeRg(object):
 
         # determine bead masses
         if self._bead_type_mass:
-            bead_masses = [self._bead_type_mass[bead_type] for bead_type in self._bead_types]
+            bead_masses = np.array([self._bead_type_mass[bead_type] for bead_type in self._bead_types])
         else:
             bead_masses = np.ones(self._n_beads)
 
-        # compute time series for center of mass position
-        com = np.average(xyz, axis=1, weights=bead_masses)
-
-        # compute time series for radius of gyration
-        d2 = np.sum((xyz - com[:, None, :])**2, axis=2)
-        self._rg = np.sqrt(np.average(d2, axis=1, weights=bead_masses))
+        self._rg = md.compute_rg(self._trajectory, masses=bead_masses)
 
     def save_to_csv(self, filename="rg.csv"):
         data = {"frame": np.arange(len(self._rg)) + 1,
