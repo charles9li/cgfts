@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from scipy.constants import N_A, R
 import numpy as np
 
@@ -6,6 +8,26 @@ import sim
 __all__ = ['SystemRun']
 
 
+# default Simulation Package Settings
+sim.export.lammps.NeighOne = 8000
+sim.export.lammps.UseTable2 = True
+sim.export.lammps.InnerCutoff = 1.e-6
+sim.export.lammps.NPairPotentialBins = 1000
+sim.export.lammps.LammpsExec = 'lmp_omp'
+sim.export.lammps.UseLangevin = True
+sim.export.lammps.OMP_NumThread = 8
+sim.export.lammps.TableInterpolationStyle = 'spline'    # More robust than spline for highly CG-ed systems
+sim.srel.optimizetrajlammps.LammpsDelTempFiles = False
+sim.srel.optimizetrajlammps.UseLangevin = True
+sim.export.omm.platformName = 'CUDA'                    # or 'OpenCL' or 'GPU' or 'CUDA'
+sim.export.omm.device = -1                              # -1 is default, let openmm choose its own platform.
+sim.export.omm.NPairPotentialKnots = 500                # number of points used to spline-interpolate the potential
+sim.export.omm.InnerCutoff = 0.001                      # 0.001 is default. Note that a small value is not necessary, like in the lammps export, because the omm export interpolates to zero
+sim.srel.optimizetrajomm.OpenMMStepsMin = 0             # number of steps to minimize structure, 0 is default
+sim.srel.optimizetrajomm.OpenMMDelTempFiles = False     # False is Default
+sim.export.omm.UseTabulated = True
+
+# conversion factors
 _TEMPERATURE_CONVERSION_FACTOR = 1.0e-25 * N_A
 _PRESSURE_CONVERSION_FACTOR = R / 1.0e3
 
@@ -18,8 +40,8 @@ class BaseSystem(object):
         self.pressure = pressure
         self._cut = cut
         self._bead_type_dict = {}
-        self._mol_type_dict = {}
-        self._mol_num_dict = {}
+        self._mol_type_dict = OrderedDict()
+        self._mol_num_dict = OrderedDict()
         self._bond_types = []
 
     @property

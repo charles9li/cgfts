@@ -46,15 +46,13 @@ class ComputeRg(object):
 
     def compute(self):
 
-        # get positions
-        xyz = self._trajectory.xyz
-
         # determine bead masses
         if self._bead_type_mass:
             bead_masses = np.array([self._bead_type_mass[bead_type] for bead_type in self._bead_types])
         else:
             bead_masses = np.ones(self._n_beads)
 
+        # compute rg
         self._rg = md.compute_rg(self._trajectory, masses=bead_masses)
 
     def save_to_csv(self, filename="rg.csv"):
