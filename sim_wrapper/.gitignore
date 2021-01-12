@@ -2,4 +2,4 @@
 pylib*
 
 # utils
-utils/*
+../old/utils/*
