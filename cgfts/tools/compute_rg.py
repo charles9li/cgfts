@@ -20,6 +20,11 @@ class ComputeRg(object):
         # initialize rg
         self._rg = None
 
+    @classmethod
+    def from_dcd(cls, dcd, top, chain_index=0):
+        trajectory = md.load_dcd(dcd, top)
+        return cls(trajectory, chain_index=chain_index)
+
     def _slice_trajectory(self, trajectory, chain_index):
         topology = trajectory.topology
         chain = list(topology.chains)[chain_index]
@@ -31,11 +36,6 @@ class ComputeRg(object):
         self._bead_types = []
         for atom in self._topology.atoms:
             self._bead_types.append(atom.name)
-
-    @classmethod
-    def from_dcd(cls, dcd, top, chain_index=0):
-        trajectory = md.load_dcd(dcd, top)
-        return cls(trajectory, chain_index=chain_index)
 
     @property
     def rg(self):

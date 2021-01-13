@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from collections import OrderedDict
 import os
 
@@ -7,7 +9,7 @@ import numpy as np
 
 import sim
 
-from sim_wrapper.utils import *
+from .utils import *
 
 __all__ = ['SystemCG', 'SystemRun']
 
