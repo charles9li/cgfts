@@ -3,3 +3,6 @@ pylib/*
 
 # output files from tests
 rg.csv
+
+# data
+data
