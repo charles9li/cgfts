@@ -452,7 +452,7 @@ class SystemRun(BaseSystem):
         # configure integrator
         integrator = self._system.Int
         integrator.Method = integrator.Methods.VVIntegrate
-        integrator.Method.TimeStep = 0.0005
+        integrator.Method.TimeStep = 0.005
         integrator.Method.Thermostat = integrator.Method.ThermostatLangevin
         integrator.Method.LangevinGamma = 1.0
         integrator.Method.Barostat = integrator.Method.BarostatMonteCarlo
