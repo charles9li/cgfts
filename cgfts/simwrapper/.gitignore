@@ -1,5 +1,5 @@
 # sim fortran files
-pylib*
+pylib
 
 # utils
 ../old/utils/*
