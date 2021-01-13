@@ -3,3 +3,6 @@ pylib*
 
 # utils
 ../old/utils/*
+
+# old files
+srel.py
