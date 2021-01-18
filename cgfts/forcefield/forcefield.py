@@ -23,6 +23,11 @@ _SMEAR_LENGTHS = {'Bpba':   {313.15: 0.39353296218472217,
                   'D':      {313.15: 0.575160305442338,
                              373.15: 0.5872282195663296}}
 
+# pressure corresponding to each temperature
+_DEFAULT_PRESSURES = {293.15: 4500.0,
+                      313.15: 3866.4,
+                      373.15: 2738.8}
+
 
 class BeadType(object):
 
