@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 import sys
 import unittest
 
-from sim_wrapper.system import *
+from cgfts.simwrapper.system import *
 
 
 class TestCG(unittest.TestCase):
