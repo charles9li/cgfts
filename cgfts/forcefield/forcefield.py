@@ -8,7 +8,13 @@ import numpy as np
 __all__ = ['BeadType', 'Gaussian', 'Bonded', 'ForceField']
 
 
-_SMEAR_LENGTHS = {'Bpba':   {313.15: 0.39353296218472217,
+_SMEAR_LENGTHS = {'A4':     {313.15: 0.6070253571898435,
+                             373.15: 0.6157183580257802},
+                  'A12':    {313.15: 0.7614438061045977,
+                             373.15: 0.7726444026435343},
+                  'mA12':   {313.15: 0.7748483370378075,
+                             373.15: 0.7859077900317265},
+                  'Bpba':   {313.15: 0.39353296218472217,
                              373.15: 0.383170058124081},
                   'Bpla':   {313.15: 0.39353296218472217,
                              373.15: 0.383170058124081},
@@ -21,7 +27,10 @@ _SMEAR_LENGTHS = {'Bpba':   {313.15: 0.39353296218472217,
                   'E6':     {313.15: 0.575160305442338,
                              373.15: 0.5872282195663296},
                   'D':      {313.15: 0.575160305442338,
-                             373.15: 0.5872282195663296}}
+                             373.15: 0.5872282195663296},
+                  'D6':     {313.15: 0.575160305442338,
+                             373.15: 0.5872282195663296},
+                  'D12':    {313.15: 0.7246803915920862}}
 
 # pressure corresponding to each temperature
 _DEFAULT_PRESSURES = {293.15: 4500.0,
@@ -83,6 +92,11 @@ class Gaussian(_Potential):
         s += "\n 'Sigma' : 1.0000e+00 }"
         return s
 
+    def set_default_Kappa(self, temperature):
+        smear_length_1 = _SMEAR_LENGTHS[self.bead_name_1][temperature]
+        smear_length_2 = _SMEAR_LENGTHS[self.bead_name_2][temperature]
+        self.Kappa = 1. / (2. * (smear_length_1**2 + smear_length_2**2))
+
 
 class Bonded(_Potential):
 
@@ -113,8 +127,8 @@ class Bonded(_Potential):
 
     def __str__(self):
         s = ">>> POTENTIAL " + self.name
-        s += "\n{'Dist0' : {} ,".format(self.Dist0)
-        s += "\n 'FConst' : {} }".format(self.FConst)
+        s += "\n{{'Dist0' : {} ,".format(self.Dist0)
+        s += "\n 'FConst' : {} }}".format(self.FConst)
         return s
 
 
