@@ -1,5 +1,5 @@
 # sim fortran files
-pylib/*
+pylib
 
 # output files from tests
 rg.csv
