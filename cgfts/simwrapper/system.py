@@ -48,7 +48,10 @@ class BaseSystem(object):
     def __init__(self, temperature, pressure=None, cut=2.5, *args, **kwargs):
         self._system = None
         self.temperature = temperature
-        self.pressure = pressure
+        if pressure is None:
+            self.pressure = _DEFAULT_PRESSURES[temperature]
+        else:
+            self.pressure = pressure
         self._cut = cut
         self._bead_type_dict = {}
         self._mol_type_dict = OrderedDict()
@@ -97,6 +100,11 @@ class SystemCG(BaseSystem):
         self._residue_map = {}
         self._systems = []
         self._optimizers = []
+        self._potential_fix = []
+
+    @property
+    def systems(self):
+        return self._systems
 
     def add_trajectory(self, dcd_list, top, stride=1):
         if isinstance(dcd_list, str):
@@ -254,32 +262,38 @@ class SystemCG(BaseSystem):
             for i, BeadName1 in enumerate(BeadNameList):
                 for BeadName2 in BeadNameList[i:]:
                     BeadName1_sorted, BeadName2_sorted = np.sort([BeadName1, BeadName2])
-                    Label = "Gaussian_{}{}".format(BeadName1_sorted, BeadName2_sorted)
+                    Label = "Gaussian_{}_{}".format(BeadName1_sorted, BeadName2_sorted)
                     BeadType1 = CG_atom_type_dict[BeadName1_sorted]
                     BeadType2 = CG_atom_type_dict[BeadName2_sorted]
                     Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2])
                     Gaussian = sim.potential.LJGaussian(Sys, Cut=self._cut, Filter=Filter,
                                                         B=1.0, Kappa=1.0, Dist0=0.0, Sigma=1.0, Epsilon=0.0,
                                                         Label=Label)
-                    # TODO: implement way to fix B
                     Gaussian.Param.Kappa.Fixed = True
                     Gaussian.Param.Dist0.Fixed = True
                     Gaussian.Param.Sigma.Fixed = True
                     Gaussian.Param.Epsilon.Fixed = True
+                    for fix in self._potential_fix:
+                        if Label == fix[0]:
+                            getattr(Gaussian.Param, fix[1]).Fixed = fix[2]
                     ForceField.append(Gaussian)
 
             # create Bonded potentials
             print("creating bonded potentials")
             for BondType in BondTypes:
                 BeadName1, BeadName2 = BondType
-                Label = "Bonded_{}{}".format(BeadName1, BeadName2)
+                Label = "Bonded_{}_{}".format(BeadName1, BeadName2)
                 BeadType1 = CG_atom_type_dict[BeadName1]
                 BeadType2 = CG_atom_type_dict[BeadName2]
                 Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2], Bonded=True)
                 Bonded = sim.potential.Bond(Sys, Filter=Filter,
                                             Dist0=1.0, FConst=1.0,
                                             Label=Label)
-                # TODO: implement way to fix dist0 and k
+                Bonded.Param.Dist0.Fixed = False
+                Bonded.Param.FConst.Fixed = False
+                for fix in self._potential_fix:
+                    if Label == fix[0]:
+                        getattr(Bonded.Param, fix[1]).Fixed = fix[2]
                 ForceField.append(Bonded)
 
             # add potentials to forcefield
@@ -325,6 +339,28 @@ class SystemCG(BaseSystem):
     def load_params_from_file(self, filename):
         for system in self._systems:
             system.ForceField.SetParamString(open(filename, 'r').read())
+
+    def set_parameter_fix(self, potential_name, parameter_name, fix=True):
+        self._potential_fix.append((potential_name, parameter_name, fix))
+
+    def fix_gaussian_B(self, bead_name_1, bead_name_2):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_parameter_fix(potential_name, 'B')
+
+    def fix_bonded_Dist0(self, bead_name_1, bead_name_2):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Bonded_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_parameter_fix(potential_name, 'Dist0')
+
+    def fix_bonded_FConst(self, bead_name_1, bead_name_2):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Bonded_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_parameter_fix(potential_name, 'FConst')
+        
+    def fix_bonded(self, bead_name_1, bead_name_2):
+        self.fix_bonded_Dist0(bead_name_1, bead_name_2)
+        self.fix_bonded_FConst(bead_name_1, bead_name_2)
 
     def run(self, steps_equil, steps_prod, steps_stride):
         for opt in self._optimizers:
@@ -426,7 +462,6 @@ class SystemRun(BaseSystem):
                 gaussian = sim.potential.LJGaussian(self._system, Cut=self._cut, Filter=poly_filter,
                                                     B=1.0, Kappa=1.0, Dist0=0.0, Sigma=1.0, Epsilon=0.0,
                                                     Label=label)
-                # TODO: add potential fix
                 force_field.append(gaussian)
 
         # add bonded potentials
@@ -439,7 +474,6 @@ class SystemRun(BaseSystem):
             bonded = sim.potential.Bond(self._system, Filter=poly_filter,
                                         Dist0=1.0, FConst=1.0,
                                         Label=label)
-            # TODO: add potential fix
             force_field.append(bonded)
 
         # add potentials to force field
