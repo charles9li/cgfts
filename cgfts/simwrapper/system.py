@@ -9,7 +9,7 @@ import numpy as np
 
 import sim
 
-from .utils import *
+from cgfts.simwrapper.utils import *
 
 __all__ = ['SystemCG', 'SystemRun']
 
@@ -34,13 +34,18 @@ sim.srel.optimizetrajomm.OpenMMDelTempFiles = False     # False is Default
 sim.export.omm.UseTabulated = True
 
 # conversion factors
-_TEMPERATURE_CONVERSION_FACTOR = 1.0e-25 * N_A
-_PRESSURE_CONVERSION_FACTOR = R / 1.0e3
+_PRESSURE_CONVERSION_FACTOR = 1.0e-25 * N_A
+_TEMPERATURE_CONVERSION_FACTOR = R / 1.0e3
+
+# pressure corresponding to each temperature
+_DEFAULT_PRESSURES = {293.15: 4500.0,
+                      313.15: 3866.4,
+                      373.15: 2738.8}
 
 
 class BaseSystem(object):
 
-    def __init__(self, temperature, pressure, cut=2.5, *args, **kwargs):
+    def __init__(self, temperature, pressure=None, cut=2.5, *args, **kwargs):
         self._system = None
         self.temperature = temperature
         self.pressure = pressure
@@ -56,19 +61,19 @@ class BaseSystem(object):
 
     @property
     def temperature(self):
-        return self._temperature / _PRESSURE_CONVERSION_FACTOR
+        return self._temperature / _TEMPERATURE_CONVERSION_FACTOR
 
     @temperature.setter
     def temperature(self, value):
-        self._temperature = value * _PRESSURE_CONVERSION_FACTOR
+        self._temperature = value * _TEMPERATURE_CONVERSION_FACTOR
 
     @property
     def pressure(self):
-        return self._pressure / _TEMPERATURE_CONVERSION_FACTOR
+        return self._pressure / _PRESSURE_CONVERSION_FACTOR
 
     @pressure.setter
     def pressure(self, value):
-        self._pressure = value * _TEMPERATURE_CONVERSION_FACTOR
+        self._pressure = value * _PRESSURE_CONVERSION_FACTOR
 
     @property
     def cut(self):
@@ -86,8 +91,8 @@ class BaseSystem(object):
 
 class SystemCG(BaseSystem):
 
-    def __init__(self, temperature, pressure, cut=2.5):
-        super(SystemCG, self).__init__(temperature, pressure, cut=cut)
+    def __init__(self, temperature, pressure=None, cut=2.5):
+        super(SystemCG, self).__init__(temperature, pressure=pressure, cut=cut)
         self._traj_list = []
         self._residue_map = {}
         self._systems = []
@@ -334,8 +339,8 @@ class SystemCG(BaseSystem):
 
 class SystemRun(BaseSystem):
 
-    def __init__(self, temperature, pressure, cut=2.5):
-        super(SystemRun, self).__init__(temperature, pressure, cut=cut)
+    def __init__(self, temperature, pressure=None, cut=2.5):
+        super(SystemRun, self).__init__(temperature, pressure=pressure, cut=cut)
 
     def add_dodecane_2bead(self, num_mol=1):
         bead_name_list = ['D', 'D']
@@ -464,3 +469,12 @@ class SystemRun(BaseSystem):
                                       TrajFile="traj.dcd", Verbose=True,
                                       NStepsEquil=steps_equil, NStepsProd=steps_prod,
                                       WriteFreq=write_freq)
+
+
+if __name__ == '__main__':
+    t = 313.15
+    print(t)
+    t = t / _TEMPERATURE_CONVERSION_FACTOR
+    print(t)
+    t = t * _TEMPERATURE_CONVERSION_FACTOR
+    print(t)
