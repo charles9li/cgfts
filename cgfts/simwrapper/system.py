@@ -9,6 +9,7 @@ import numpy as np
 
 import sim
 
+from cgfts.forcefield import *
 from cgfts.simwrapper.utils import *
 
 __all__ = ['SystemCG', 'SystemRun']
@@ -273,9 +274,9 @@ class SystemCG(BaseSystem):
                     Gaussian.Param.Dist0.Fixed = True
                     Gaussian.Param.Sigma.Fixed = True
                     Gaussian.Param.Epsilon.Fixed = True
-                    for fix in self._potential_fix:
-                        if Label == fix[0]:
-                            getattr(Gaussian.Param, fix[1]).Fixed = fix[2]
+                    # for fix in self._potential_fix:
+                    #     if Label == fix[0]:
+                    #         getattr(Gaussian.Param, fix[1]).Fixed = fix[2]
                     ForceField.append(Gaussian)
 
             # create Bonded potentials
@@ -291,9 +292,9 @@ class SystemCG(BaseSystem):
                                             Label=Label)
                 Bonded.Param.Dist0.Fixed = False
                 Bonded.Param.FConst.Fixed = False
-                for fix in self._potential_fix:
-                    if Label == fix[0]:
-                        getattr(Bonded.Param, fix[1]).Fixed = fix[2]
+                # for fix in self._potential_fix:
+                #     if Label == fix[0]:
+                #         getattr(Bonded.Param, fix[1]).Fixed = fix[2]
                 ForceField.append(Bonded)
 
             # add potentials to forcefield
@@ -340,27 +341,73 @@ class SystemCG(BaseSystem):
         for system in self._systems:
             system.ForceField.SetParamString(open(filename, 'r').read())
 
-    def set_parameter_fix(self, potential_name, parameter_name, fix=True):
-        self._potential_fix.append((potential_name, parameter_name, fix))
+    def fix_parameter(self, potential_name, parameter_name, fix=True):
+        # self._potential_fix.append((potential_name, parameter_name, fix))
+        for s in self._systems:
+            for p in s.ForceField:
+                if p.Name == potential_name:
+                    getattr(p.Param, parameter_name).Fixed = fix
 
     def fix_gaussian_B(self, bead_name_1, bead_name_2):
         bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
         potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
-        self.set_parameter_fix(potential_name, 'B')
+        self.fix_parameter(potential_name, 'B')
 
     def fix_bonded_Dist0(self, bead_name_1, bead_name_2):
         bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
         potential_name = "Bonded_{}_{}".format(bead_name_1, bead_name_2)
-        self.set_parameter_fix(potential_name, 'Dist0')
+        self.fix_parameter(potential_name, 'Dist0')
 
     def fix_bonded_FConst(self, bead_name_1, bead_name_2):
         bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
         potential_name = "Bonded_{}_{}".format(bead_name_1, bead_name_2)
-        self.set_parameter_fix(potential_name, 'FConst')
+        self.fix_parameter(potential_name, 'FConst')
         
     def fix_bonded(self, bead_name_1, bead_name_2):
         self.fix_bonded_Dist0(bead_name_1, bead_name_2)
         self.fix_bonded_FConst(bead_name_1, bead_name_2)
+
+    def set_gaussian_parameter(self, potential_name, parameter_name, value):
+        for s in self._systems:
+            for p in s.ForceField:
+                if p.Name == potential_name:
+                    potential_string = ">>> POTENTIAL {}\n{}".format(p.Name, p.ParamString())
+                    potential = Gaussian.from_string(potential_string)
+                    setattr(potential, parameter_name, value)
+                    s.ForceField.SetParamString(str(potential))
+
+    def set_gaussian_B(self, bead_name_1, bead_name_2, value):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_gaussian_parameter(potential_name, 'B', value)
+
+    def set_default_gaussian_Kappa(self):
+        for s in self._systems:
+            for p in s.ForceField:
+                if p.Name.startswith('Gaussian'):
+                    potential_string = ">>> POTENTIAL {}\n{}".format(p.Name, p.ParamString())
+                    potential = Gaussian.from_string(potential_string)
+                    potential.set_default_Kappa(self.temperature)
+                    s.ForceField.SetParamString(str(potential))
+
+    def set_bonded_parameter(self, potential_name, parameter_name, value):
+        for s in self._systems:
+            for p in s.ForceField:
+                if p.Name == potential_name:
+                    potential_string = ">>> POTENTIAL {}\n{}".format(p.Name, p.ParamString())
+                    potential = Bonded.from_string(potential_string)
+                    setattr(potential, parameter_name, value)
+                    s.ForceField.SetParamString(str(potential))
+
+    def set_bonded_Dist0(self, bead_name_1, bead_name_2, value):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Bonded_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_bonded_parameter(potential_name, 'Dist0', value)
+
+    def set_bonded_FConst(self, bead_name_1, bead_name_2, value):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Bonded_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_bonded_parameter(potential_name, 'FConst', value)
 
     def run(self, steps_equil, steps_prod, steps_stride):
         for opt in self._optimizers:
