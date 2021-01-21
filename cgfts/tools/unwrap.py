@@ -3,7 +3,7 @@ import argparse
 import mdtraj as md
 import numpy as np
 
-__all__ = ['unwrap_traj']
+__all__ = ['unwrap_traj', 'unwrap_traj_from_dcd']
 
 
 def parse_arguments():
@@ -15,7 +15,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def unwrap_traj(traj_filename, top_filename, method='npt', save_traj=False):
+def unwrap_traj(traj_w, method='npt', output_filename=None, save_traj=False):
     """Unwraps a trajectory.
 
     Reference
@@ -26,10 +26,8 @@ def unwrap_traj(traj_filename, top_filename, method='npt', save_traj=False):
 
     Parameters
     ----------
-    traj_filename : str
-        Path of trajectory file
-    top_filename : str
-        Path of topology file
+    traj_w : md.Trajectory
+        wrapped trajectory
     method : str, optional
         Which algorithm to use to unwrap trajectories. If 'nvt', the
         conventional unwrapping scheme is used, and if 'npt', the scheme
@@ -46,11 +44,7 @@ def unwrap_traj(traj_filename, top_filename, method='npt', save_traj=False):
     """
 
     # import wrapped trajectory
-    traj_w = md.load(traj_filename, top=top_filename)
     xyz_w = traj_w.xyz
-
-    # get prefix from traj filename
-    prefix = '.'.join(traj_filename.split('.')[:-1])
 
     # initialize unwrapped positions
     xyz_uw = np.empty([traj_w.n_frames, traj_w.topology.n_atoms, 3])
@@ -80,12 +74,21 @@ def unwrap_traj(traj_filename, top_filename, method='npt', save_traj=False):
 
     # save unwrapped trajectory to file
     if save_traj:
-        traj_uw.save("{}_uw.dcd".format(prefix))
+        if output_filename is not None:
+            traj_uw.save(output_filename)
+        else:
+            raise ValueError("no filename supplied")
 
     # return unwrapped trajectory
     return traj_uw
 
 
+def unwrap_traj_from_dcd(traj_filename, top_filename, method='npt', save_traj=False):
+    traj_w = md.load_dcd(traj_filename, top=top_filename)
+    output_filename = '.'.join(traj_filename.split('.')[:-1])
+    return unwrap_traj(traj_w, method=method, output_filename=output_filename, save_traj=save_traj)
+
+
 if __name__ == '__main__':
     args = parse_arguments()
-    unwrap_traj(args.traj, args.top, method=args.method, save_traj=True)
+    unwrap_traj_from_dcd(args.traj, args.top, method=args.method, save_traj=True)

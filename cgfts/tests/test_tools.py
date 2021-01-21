@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import unittest
 
 import matplotlib.pyplot as plt
@@ -28,6 +30,16 @@ class TestTools(unittest.TestCase):
         com_traj.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
         com_traj.compute_com(method='com')
         self.assertEqual(170, com_traj.traj_com.topology.n_atoms)
+
+    def test_diffusion(self):
+        dcd = "data/dodecane_NVT_313K_1bar_L6nm_M5_cf1.dcd"
+        top = "data/dodecane_313K_1bar_L6nm_M5_cf1.pdb"
+        compute_diffusion = ComputeDiffusion.from_dcd(dcd, top)
+        compute_diffusion.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
+        compute_diffusion.compute(method='nvt', com=True)
+        plt.figure()
+        plt.plot(compute_diffusion.msd)
+        plt.show()
 
 
 if __name__ == '__main__':
