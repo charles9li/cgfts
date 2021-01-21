@@ -10,7 +10,7 @@ import numpy as np
 import sim
 
 from cgfts.forcefield import *
-from cgfts.simwrapper.utils import *
+from .utils import *
 
 __all__ = ['SystemCG', 'SystemRun']
 
@@ -339,7 +339,12 @@ class SystemCG(BaseSystem):
 
     def load_params_from_file(self, filename):
         for system in self._systems:
-            system.ForceField.SetParamString(open(filename, 'r').read())
+            try:
+                system.ForceField.SetParamString(open(filename, 'r').read())
+            except IOError:
+                forcefield_data_dir = os.path.dirname(__file__)
+                ff_path = os.path.join(forcefield_data_dir, '../forcefield/data', filename)
+                system.ForceField.SetParamString(open(ff_path, 'r').read())
 
     def fix_parameter(self, potential_name, parameter_name, fix=True):
         # self._potential_fix.append((potential_name, parameter_name, fix))

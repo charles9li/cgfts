@@ -1,8 +1,10 @@
+from __future__ import absolute_import
+
 import unittest
 
 import matplotlib.pyplot as plt
 
-from sim_wrapper.tools import *
+from cgfts.tools import *
 
 
 class TestTools(unittest.TestCase):
@@ -19,6 +21,24 @@ class TestTools(unittest.TestCase):
 
         plt.figure()
         plt.plot(compute_rg.rg)
+        plt.show()
+
+    def test_com(self):
+        dcd = "data/dodecane_NVT_313K_1bar_L4nm_M5_cf1.dcd"
+        top = "data/dodecane_313K_1bar_L4nm_M5_cf1.pdb"
+        com_traj = COMTraj.from_dcd(dcd, top)
+        com_traj.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
+        com_traj.compute_com(method='com')
+        self.assertEqual(170, com_traj.traj_com.topology.n_atoms)
+
+    def test_diffusion(self):
+        dcd = "data/dodecane_NVT_313K_1bar_L6nm_M5_cf1.dcd"
+        top = "data/dodecane_313K_1bar_L6nm_M5_cf1.pdb"
+        compute_diffusion = ComputeDiffusion.from_dcd(dcd, top)
+        compute_diffusion.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
+        compute_diffusion.compute(method='nvt', com=True)
+        plt.figure()
+        plt.plot(compute_diffusion.msd)
         plt.show()
 
 

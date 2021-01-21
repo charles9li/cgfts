@@ -15,7 +15,7 @@ class TestCG(unittest.TestCase):
         system.add_trajectory("data/50mA12_NPT_293K_1bar_3wt.dcd", "data/50mA12_NPT_293K_1bar_3wt.pdb", stride=1)
         system.add_residue_map('mA1', ['Bplma', 'C6', 'E6'], [6, 6, 6],
                                [14.027, 12.011, 15.035, 12.011] + 2*[15.999] + 11*[14.027] + [15.035])
-        system.add_residue_map('C12', ['D', 'D'], [6, 6], [15.035] + 10*[14.027] + [15.035])
+        system.add_residue_map('C12', ['D6', 'D6'], [6, 6], [15.035] + 10*[14.027] + [15.035])
         system.create_system()
         system.fix_bonded('D', 'D')
         for s in system.systems:
@@ -23,6 +23,11 @@ class TestCG(unittest.TestCase):
                 if p.Name == "Bonded_D_D":
                     self.assertEqual(True, p.Param.Dist0.Fixed)
                     self.assertEqual(True, p.Param.FConst.Fixed)
+        system.load_params_from_file("50mA12_NPT_373K_2739bar_10wt_ff.dat")
+        for s in system.systems:
+            for p in s.ForceField:
+                if p.Name == "Gaussian_D6_D6":
+                    self.assertEqual(1.2785, p.Param.B)
 
     def test_plma_2(self):
         sys.setrecursionlimit(2000)
