@@ -432,10 +432,10 @@ class SystemRun(BaseSystem):
         super(SystemRun, self).__init__(temperature, pressure=pressure, cut=cut)
 
     def add_dodecane_2bead(self, num_mol=1):
-        bead_name_list = ['D', 'D']
+        bead_name_list = ['D6', 'D6']
         mol_type = self._create_mol_type("dodecane", bead_name_list)
         mol_type.Bond(0, 1)
-        self._bond_types.append(tuple(['D', 'D']))
+        self._bond_types.append(tuple(['D6', 'D6']))
         self._mol_type_dict[tuple(bead_name_list)] = mol_type
         self._mol_num_dict[tuple(bead_name_list)] = num_mol
         
