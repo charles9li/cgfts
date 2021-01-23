@@ -88,7 +88,12 @@ class BaseSystem(object):
         pass
     
     def load_params_from_file(self, filename):
-        self._system.ForceField.SetParamString(open(filename, 'r').read())
+        try:
+            self._system.ForceField.SetParamString(open(filename, 'r').read())
+        except IOError:
+            forcefield_data_dir = os.path.dirname(__file__)
+            ff_path = os.path.join(forcefield_data_dir, '../forcefield/data', filename)
+            self._system.ForceField.SetParamString(open(ff_path, 'r').read())
 
     def run(self, *args, **kwargs):
         pass
