@@ -125,7 +125,7 @@ class SystemCG(BaseSystem):
     def add_residue_map(self, residue_name, bead_name_list, num_atoms_per_bead, atom_masses):
         self._residue_map[residue_name] = (bead_name_list, num_atoms_per_bead, atom_masses)
 
-    def create_system(self):
+    def create_system(self, load=True):
         CG_atom_type_dict = {}
         system_index = 0
         for traj in self._traj_list:
@@ -313,8 +313,9 @@ class SystemCG(BaseSystem):
             Sys.World.GetBondOrdMatrix(ShowRigid=True)
 
             # lock and load
-            print("loading system")
-            Sys.Load()
+            if load:
+                print("loading system")
+                Sys.Load()
 
             # initial positions and velocities
             print("initializing positions and velocities")
