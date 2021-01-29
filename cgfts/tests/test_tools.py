@@ -32,13 +32,38 @@ class TestTools(unittest.TestCase):
         self.assertEqual(170, com_traj.traj_com.topology.n_atoms)
 
     def test_diffusion(self):
-        dcd = "data/dodecane_NVT_313K_1bar_L6nm_M5_cf1.dcd"
-        top = "data/dodecane_313K_1bar_L6nm_M5_cf1.pdb"
-        compute_diffusion = ComputeDiffusion.from_dcd(dcd, top)
-        compute_diffusion.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
-        compute_diffusion.compute(method='nvt', com=True)
+
+        import mdtraj as md
+
+        # filename
+        top = "data/positions.pdb"
+
+        # parameters
+        tau = 1.0
+
+        # use NVT algorithm
+        dcd = "data/traj_NVT.dcd"
+        traj = md.load_dcd(dcd, top=top)
+        compute_diffusion_NVT = ComputeDiffusion(traj, dt=0.01)
+        compute_diffusion_NVT.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
+        compute_diffusion_NVT.compute_msd(method='nvt', com=False)
+        compute_diffusion_NVT.compute(tau=tau)
+        compute_diffusion_NVT.print_summary(summary_filename="msd_summary_NVT.txt")
+
+        # use NPT algorithm
+        dcd = "data/traj_NPT.dcd"
+        traj = md.load_dcd(dcd, top=top)
+        compute_diffusion_NPT = ComputeDiffusion(traj, dt=0.01)
+        compute_diffusion_NPT.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
+        compute_diffusion_NPT.compute_msd(method='npt', com=False)
+        compute_diffusion_NPT.compute(tau=tau)
+        compute_diffusion_NPT.print_summary(summary_filename="msd_summary_NPT.txt")
+
+        # plot msd
         plt.figure()
-        plt.plot(compute_diffusion.msd)
+        plt.plot(compute_diffusion_NVT.msd, label="NVT")
+        plt.plot(compute_diffusion_NPT.msd, label="NPT")
+        plt.legend()
         plt.show()
 
 

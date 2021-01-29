@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from pymbar import timeseries
 from scipy.stats import linregress
@@ -15,8 +15,9 @@ class ComputeDiffusion(object):
         self._traj = traj
         self._residue_masses = {}
         self._msd = None
-        self._dt = dt
         self._diff_coeff_list = None
+        self._dt = dt
+        self._tau = None
 
     @classmethod
     def from_dcd(cls, dcd, top, stride=1, dt=0.01):
@@ -39,7 +40,7 @@ class ComputeDiffusion(object):
         if com:
             com_traj.compute_com(method='com')
         else:
-            com_traj.compute_com(method)
+            com_traj.compute_com(method='centroid')
         traj_com = com_traj.traj_com
         
         # unwrap traj_com
@@ -51,6 +52,7 @@ class ComputeDiffusion(object):
     def compute(self, tau):
 
         # number of frames per block
+        self._tau = tau
         n_frames_per_block = int(tau / self._dt)
 
         # compute slope of each section
@@ -66,9 +68,24 @@ class ComputeDiffusion(object):
         # compute diffusion coefficient
         self._diff_coeff_list = slope_list_n / 6.
 
-    def print_summary(self):
-        s = "Diffusion coefficient summary"
-        s += "\nquantity\tvalue"
-        s += "\nmean    \t{} nm^2/s".format(np.mean(self._diff_coeff_list))
-        s += "\nstd err \t{} nm^2/s".format(np.std(self._diff_coeff_list) / len(self._diff_coeff_list))
-        print(s)
+    def print_summary(self, verbose=True, summary_filename=None):
+
+        # create summary
+        s = "\nDiffusion coefficient summary"
+        s += "\n============================"
+        s += "\nquantity\t\tvalue"
+        s += "\n--------\t\t-----"
+        s += "\nmean           \t{} nm^2/ns".format(np.mean(self._diff_coeff_list))
+        s += "\nstd err        \t{} nm^2/ns".format(np.std(self._diff_coeff_list) / len(self._diff_coeff_list))
+        s += "\ndt             \t{} ns".format(self._dt)
+        s += "\ntau            \t{} ns".format(self._tau)
+        s += "\nn_frames       \t{}".format(len(self._msd))
+        s += "\nn_frames_uncorr\t{}".format(len(self._diff_coeff_list))
+
+        # print if verbose
+        if verbose:
+            print(s)
+
+        # save to filename if specified
+        if summary_filename is not None:
+            print(s, file=open(summary_filename, 'w'))
