@@ -1,6 +1,5 @@
 from __future__ import absolute_import, print_function
 
-from pymbar import timeseries
 from scipy.stats import linregress
 import mdtraj as md
 import numpy as np
@@ -62,6 +61,7 @@ class ComputeDiffusion(object):
             slope_list[i] = slope
 
         # find independent list of slopes
+        from pymbar import timeseries
         indices = timeseries.subsampleCorrelatedData(slope_list)
         slope_list_n = slope_list[indices]
 
