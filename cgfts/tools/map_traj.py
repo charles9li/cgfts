@@ -32,7 +32,7 @@ class MapTrajectory(object):
                     atom_indices.append(atom.index)
         self._trajectory = self._trajectory.atom_slice(atom_indices)
 
-    def residue_map(self, residue_name, bead_names, num_atoms_per_bead, atom_masses):
+    def add_residue_map(self, residue_name, bead_names, num_atoms_per_bead, atom_masses):
         if len(bead_names) != len(num_atoms_per_bead):
             raise ValueError("bead_names must be same length as num_atoms_per_bead")
         if np.sum(num_atoms_per_bead) != len(atom_masses):
