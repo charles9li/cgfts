@@ -67,7 +67,7 @@ class MapTrajectory(object):
                 residue_mapped = topology_mapped.add_residue(residue.name, chain_mapped)
 
                 # get atom indices
-                atom_indices = [atom.index for atom in chain.atoms]
+                atom_indices = [atom.index for atom in residue.atoms]
 
                 # get residue information
                 bead_names, num_atoms_per_bead, atom_masses = self._residue_map[residue.name]
