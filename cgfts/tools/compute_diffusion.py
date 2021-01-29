@@ -73,8 +73,8 @@ class ComputeDiffusion(object):
         # create summary
         s = "\nDiffusion coefficient summary"
         s += "\n============================"
-        s += "\nquantity\t\tvalue"
-        s += "\n--------\t\t-----"
+        s += "\nquantity\tvalue"
+        s += "\n--------\t-----"
         s += "\nmean           \t{} nm^2/ns".format(np.mean(self._diff_coeff_list))
         s += "\nstd err        \t{} nm^2/ns".format(np.std(self._diff_coeff_list) / len(self._diff_coeff_list))
         s += "\ndt             \t{} ns".format(self._dt)
