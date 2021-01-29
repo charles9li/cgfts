@@ -35,7 +35,7 @@ class COMTraj(object):
 
             # get chain masses
             if method == 'centroid':
-                masses = np.ones(len(chain.atoms))
+                masses = np.ones(len(list(chain.atoms)))
             elif method == 'com':
                 masses = np.array([])
                 for residue in chain.residues:
@@ -48,8 +48,11 @@ class COMTraj(object):
             chain_com = topology_com.add_chain()
             residue_com = topology_com.add_residue(chain_name, chain_com)
             if chain_name not in bead_dict.keys():
-                bead_dict[chain_name] = md.element.Element(200+num_bead_types, chain_name,
-                                                           'A'+str(num_bead_types), mass_chain, 1.0)
+                try:
+                    bead_dict[chain_name] = md.element.Element(200+num_bead_types, chain_name,
+                                                               'A'+str(num_bead_types), mass_chain, 1.0)
+                except AssertionError:
+                    bead_dict[chain_name] = md.element.Element.getBySymbol('A'+str(num_bead_types))
                 num_bead_types += 1
             topology_com.add_atom(chain_name, bead_dict[chain_name], residue_com)
 
