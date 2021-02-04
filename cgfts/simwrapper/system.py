@@ -513,10 +513,10 @@ class SystemRun(BaseSystem):
         bead_name_list = self._bead_type_dict.keys()
         for i, bead_name_1 in enumerate(bead_name_list):
             for bead_name_2 in bead_name_list[i:]:
-                bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
-                label = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
-                bead_type_1 = self._bead_type_dict[bead_name_1]
-                bead_type_2 = self._bead_type_dict[bead_name_2]
+                bead_name_1_sorted, bead_name_2_sorted = np.sort([bead_name_1, bead_name_2])
+                label = "Gaussian_{}_{}".format(bead_name_1_sorted, bead_name_2_sorted)
+                bead_type_1 = self._bead_type_dict[bead_name_1_sorted]
+                bead_type_2 = self._bead_type_dict[bead_name_2_sorted]
                 poly_filter = sim.atomselect.PolyFilter([bead_type_1, bead_type_2])
                 gaussian = sim.potential.LJGaussian(self._system, Cut=self._cut, Filter=poly_filter,
                                                     B=1.0, Kappa=1.0, Dist0=0.0, Sigma=1.0, Epsilon=0.0,
