@@ -562,11 +562,17 @@ class SystemRun(BaseSystem):
         integrator.Method.LangevinGamma = 1.0
         integrator.Method.Barostat = integrator.Method.BarostatMonteCarlo
 
-    def run(self, steps_equil, steps_prod, write_freq):
-        sim.export.omm.MakeOpenMMTraj(self._system, DelTempFiles=False, Prefix="system_",
-                                      TrajFile="traj.dcd", Verbose=True,
-                                      NStepsEquil=steps_equil, NStepsProd=steps_prod,
-                                      WriteFreq=write_freq)
+    def run(self, steps_equil, steps_prod, write_freq, use_openmm=True):
+        if use_openmm:
+            sim.export.omm.MakeOpenMMTraj(self._system, DelTempFiles=False, Prefix="system_",
+                                          TrajFile="traj.dcd", Verbose=True,
+                                          NStepsEquil=steps_equil, NStepsProd=steps_prod,
+                                          WriteFreq=write_freq)
+        else:
+            sim.export.omm.MakeLammpsTraj(self._system, DelTempFiles=False, Prefix="system_",
+                                          TrajFile="traj.lammpstrj", Verbose=True,
+                                          NStepsEquil=steps_equil, NStepsProd=steps_prod,
+                                          WriteFreq=write_freq)
 
 
 if __name__ == '__main__':
