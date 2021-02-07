@@ -47,13 +47,14 @@ _DEFAULT_PRESSURES = {293.15: 4500.0,
 
 class BaseSystem(object):
 
-    def __init__(self, temperature, pressure=None, cut=2.5, *args, **kwargs):
+    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', *args, **kwargs):
         self._system = None
         self.temperature = temperature
         if pressure is None:
             self.pressure = _DEFAULT_PRESSURES[temperature]
         else:
             self.pressure = pressure
+        self._ensemble = ensemble
         self._cut = cut
         self._bead_type_dict = {}
         self._mol_type_dict = OrderedDict()
@@ -101,8 +102,8 @@ class BaseSystem(object):
 
 class SystemCG(BaseSystem):
 
-    def __init__(self, temperature, pressure=None, cut=2.5):
-        super(SystemCG, self).__init__(temperature, pressure=pressure, cut=cut)
+    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt'):
+        super(SystemCG, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble)
         self._traj_list = []
         self._residue_map = {}
         self._systems = []
@@ -439,8 +440,8 @@ class SystemCG(BaseSystem):
 
 class SystemRun(BaseSystem):
 
-    def __init__(self, temperature, pressure=None, cut=2.5):
-        super(SystemRun, self).__init__(temperature, pressure=pressure, cut=cut)
+    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt'):
+        super(SystemRun, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble)
 
     def add_dodecane_2bead(self, num_mol=1):
         bead_name_list = ['D6', 'D6']
@@ -508,7 +509,8 @@ class SystemRun(BaseSystem):
         # set system box length, temperature, and pressure
         self._system.BoxL = box_length
         self._system.TempSet = self._temperature
-        self._system.PresSet = self._pressure
+        if self._ensemble == 'npt':
+            self._system.PresSet = self._pressure
         self._system.ForceField.Globals.Charge.Fixed = True
 
         # initialize force field
@@ -560,7 +562,8 @@ class SystemRun(BaseSystem):
         integrator.Method.TimeStep = 0.005
         integrator.Method.Thermostat = integrator.Method.ThermostatLangevin
         integrator.Method.LangevinGamma = 1.0
-        integrator.Method.Barostat = integrator.Method.BarostatMonteCarlo
+        if self._ensemble == 'npt':
+            integrator.Method.Barostat = integrator.Method.BarostatMonteCarlo
 
     def run(self, steps_equil, steps_prod, write_freq, use_openmm=True):
         if use_openmm:
