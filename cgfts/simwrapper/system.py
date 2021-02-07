@@ -367,7 +367,7 @@ class SystemCG(BaseSystem):
         self.fix_parameter(potential_name, 'B')
 
     def fix_gaussian_B_set(self, bead_name_list):
-        for i, bead_name_1 in bead_name_list:
+        for i, bead_name_1 in enumerate(bead_name_list):
             for bead_name_2 in bead_name_list[i:]:
                 self.fix_gaussian_B(bead_name_1, bead_name_2)
 
