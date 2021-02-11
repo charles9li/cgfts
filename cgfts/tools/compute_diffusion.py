@@ -49,6 +49,7 @@ class ComputeDiffusion(object):
         msd = np.mean(sd, axis=1)
         indices = timeseries.subsampleCorrelatedData(msd)
         msd_n = msd[indices]
+        # msd_n = msd
         self._msd_data.append((tau, np.mean(msd_n), np.std(msd_n), len(msd_n)))
 
     def compute_msd(self, tau):
@@ -68,6 +69,10 @@ class ComputeDiffusion(object):
         return self._result.slope / 6
 
     @property
+    def slope(self):
+        return self._result.slope
+
+    @property
     def intercept(self):
         return self._result.intercept
 
@@ -79,6 +84,16 @@ class ComputeDiffusion(object):
         plt.plot(tau_range, self._result.slope*tau_range + self._result.intercept)
         plt.xlabel(r"$\tau$ (ns)")
         plt.ylabel("mean square displacement (nm^2)")
+
+    def plot_resid(self):
+        data = np.array(self._msd_data)
+        plt.figure()
+        resid = data[:, 1] - (self.slope*data[:, 0] + self.intercept)
+        plt.scatter(data[:, 0], resid)
+        tau_range = np.array([0, np.max(data[:, 0])])
+        plt.plot(tau_range, [0, 0])
+        plt.xlabel(r"$\tau$ (ns)")
+        plt.ylabel("msd resid")
 
     def print_summary(self, verbose=True, summary_filename=None):
 
