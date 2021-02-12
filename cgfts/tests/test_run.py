@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-from sim_wrapper.system import *
+from cgfts.simwrapper.system import *
 
 
 class TestRun(unittest.TestCase):
@@ -19,6 +19,16 @@ class TestRun(unittest.TestCase):
                 self.assertEqual(1.1384, potential.Param.B)
                 self.assertEqual(1.2965, potential.Param.Kappa)
         system_plma.run(2, 2, 1)
+
+    def test_pba_forcefield(self):
+        system = SystemRun(313.15, cut=4.0)
+        system.add_polyacrylate("50*A4")
+        system.add_dodecane_2bead(num_mol=2868)
+        system.create_system(10.0)
+        system.load_params_from_file("50A4_NPT_313K_3866bar_10wt_ff.dat")
+        for p in system._system.ForceField:
+            print(p.Name)
+            print(p.ParamString())
 
 
 if __name__ == '__main__':

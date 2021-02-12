@@ -6,7 +6,6 @@ class COMTraj(object):
 
     def __init__(self, traj):
         self._traj = traj
-        self._traj_com = None
         self._residue_masses = {}
 
     @classmethod
@@ -15,8 +14,8 @@ class COMTraj(object):
         return cls(trajectory)
 
     @property
-    def traj_com(self):
-        return self._traj_com
+    def traj(self):
+        return self._traj
 
     def add_residue_masses(self, residue_name, masses):
         self._residue_masses[residue_name] = np.array(masses)
@@ -67,10 +66,10 @@ class COMTraj(object):
             xyz_com[:, i, :] = xyz_chain_com
 
         # save com trajectory
-        self._traj_com = md.Trajectory(xyz_com, topology_com,
-                                       unitcell_lengths=self._traj.unitcell_lengths,
-                                       unitcell_angles=self._traj.unitcell_angles)
+        self._traj = md.Trajectory(xyz_com, topology_com,
+                                   unitcell_lengths=self._traj.unitcell_lengths,
+                                   unitcell_angles=self._traj.unitcell_angles)
 
     def save_traj(self, dcd_filename, pdb_filename):
-        self._traj_com.save(dcd_filename)
-        self._traj_com[0].save(pdb_filename)
+        self._traj.save(dcd_filename)
+        self._traj[0].save(pdb_filename)

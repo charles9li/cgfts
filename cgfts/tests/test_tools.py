@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import unittest
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from cgfts.tools import *
 
@@ -33,37 +34,40 @@ class TestTools(unittest.TestCase):
 
     def test_diffusion(self):
 
-        import mdtraj as md
+        tau_min = 20.0
+        tau_max = 40.0
+        tau_step = 1.0
 
         # filename
         top = "data/positions.pdb"
 
-        # parameters
-        tau = 1.0
-
         # use NVT algorithm
         dcd = "data/traj_NVT.dcd"
-        traj = md.load_dcd(dcd, top=top)
-        compute_diffusion_NVT = ComputeDiffusion(traj, dt=0.01)
+        compute_diffusion_NVT = ComputeDiffusion.from_dcd(dcd, top, dt=0.01)
         compute_diffusion_NVT.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
-        compute_diffusion_NVT.compute_msd(method='nvt', com=False)
-        compute_diffusion_NVT.compute(tau=tau)
-        compute_diffusion_NVT.print_summary(summary_filename="msd_summary_NVT.txt")
+        compute_diffusion_NVT.com(method='com')
+        compute_diffusion_NVT.unwrap(method='nvt')
+        compute_diffusion_NVT.compute_msd(np.arange(start=tau_min, stop=tau_max, step=tau_step))
+        compute_diffusion_NVT.linreg()
+        compute_diffusion_NVT.plot()
+        compute_diffusion_NVT.plot_resid()
+        print(compute_diffusion_NVT.D, compute_diffusion_NVT.intercept)
+        compute_diffusion_NVT.print_summary()
 
         # use NPT algorithm
         dcd = "data/traj_NPT.dcd"
-        traj = md.load_dcd(dcd, top=top)
-        compute_diffusion_NPT = ComputeDiffusion(traj, dt=0.01)
+        compute_diffusion_NPT = ComputeDiffusion.from_dcd(dcd, top, dt=0.01)
         compute_diffusion_NPT.add_residue_masses('C12', [15.035] + 10*[14.027] + [15.035])
-        compute_diffusion_NPT.compute_msd(method='npt', com=False)
-        compute_diffusion_NPT.compute(tau=tau)
-        compute_diffusion_NPT.print_summary(summary_filename="msd_summary_NPT.txt")
+        compute_diffusion_NPT.com(method='com')
+        compute_diffusion_NPT.unwrap(method='npt')
+        compute_diffusion_NPT.compute_msd(np.arange(start=tau_min, stop=tau_max, step=tau_step))
+        compute_diffusion_NPT.linreg()
+        compute_diffusion_NPT.plot()
+        compute_diffusion_NPT.plot_resid()
+        print(compute_diffusion_NPT.D, compute_diffusion_NPT.intercept)
+        compute_diffusion_NPT.print_summary()
 
-        # plot msd
-        plt.figure()
-        plt.plot(compute_diffusion_NVT.msd, label="NVT")
-        plt.plot(compute_diffusion_NPT.msd, label="NPT")
-        plt.legend()
+        # plot
         plt.show()
 
 
