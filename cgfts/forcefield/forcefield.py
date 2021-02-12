@@ -166,6 +166,14 @@ class ForceField(object):
     def add_bead_type(self, bead_type):
         self._bead_types.append(bead_type)
 
+    def reorder_bead_types(self, bead_types):
+        if len(self._bead_types) != len(bead_types):
+            raise ValueError("argument has length {}, must have length {}".format(len(bead_types), len(self._bead_types)))
+        if set(self._bead_types) == set(bead_types):
+            self._bead_types = bead_types
+        else:
+            raise ValueError("supplied bead types are not the same as the forcefield")
+
     def add_gaussian_potential(self, gaussian_potential):
         bead_name_1 = gaussian_potential.bead_name_1
         bead_name_2 = gaussian_potential.bead_name_2
