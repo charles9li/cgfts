@@ -1,6 +1,7 @@
 from __future__ import division
 
 from ast import literal_eval
+import os
 
 from scipy.constants import R
 import numpy as np
@@ -148,7 +149,14 @@ class ForceField(object):
     @classmethod
     def from_file(cls, temperature,  ff_file):
         ff = cls(temperature)
-        s = open(ff_file, 'r').read()
+
+        try:
+            s = open(ff_file, 'r').read()
+        except IOError:
+            forcefield_data_dir = os.path.dirname(__file__)
+            ff_path = os.path.join(forcefield_data_dir, '../forcefield/data', ff_file)
+            s = open(ff_path, 'r').read()
+
         for p_string in s.split(">>> POTENTIAL")[1:]:
             p_string = p_string.strip()
             if p_string.startswith("Gaussian"):
@@ -163,14 +171,31 @@ class ForceField(object):
                 raise ValueError("potential type not valid")
         return ff
 
+    @property
+    def bead_types(self):
+        return self._bead_types
+
+    @property
+    def bonded_potentials(self):
+        return self._bonded_potentials
+
+    @property
+    def gaussian_potentials(self):
+        return self._gaussian_potentials
+
     def add_bead_type(self, bead_type):
         self._bead_types.append(bead_type)
 
     def reorder_bead_types(self, bead_types):
         if len(self._bead_types) != len(bead_types):
             raise ValueError("argument has length {}, must have length {}".format(len(bead_types), len(self._bead_types)))
-        if set(self._bead_types) == set(bead_types):
-            self._bead_types = bead_types
+        if set([b.name for b in self._bead_types]) == set(bead_types):
+            new_bead_types = []
+            for b in bead_types:
+                for bead_type in self._bead_types:
+                    if b == bead_type.name:
+                        new_bead_types.append(bead_type)
+            self._bead_types = new_bead_types
         else:
             raise ValueError("supplied bead types are not the same as the forcefield")
 
