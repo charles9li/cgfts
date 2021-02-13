@@ -312,7 +312,7 @@ class FTS(object):
         s += self._tab*3 + "InputFieldsFile = {}".format(self._input_fields_file)
         s += "\n"
         s += "\n"
-        for i, bead_type in enumerate(self._force_field.bead_types):
+        for i, bead_type in enumerate(bead_types):
             bead_name = bead_type.name
             s += self._tab*3 + "initfield{} {{".format(i+1)
             s += "\n"
