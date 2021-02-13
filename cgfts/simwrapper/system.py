@@ -10,7 +10,7 @@ import numpy as np
 import sim
 
 from cgfts.forcefield import *
-from .utils import *
+from cgfts.utils import *
 
 __all__ = ['SystemCG', 'SystemRun']
 
