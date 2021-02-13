@@ -150,6 +150,8 @@ class FTS(object):
 
         # add sections
         s += self.models_string()
+        s += self.simulation_string()
+        s += self.parallel_string()
 
         print(s, file=open(filepath, 'w'))
 
@@ -168,13 +170,18 @@ class FTS(object):
         s += "\n"
 
         # bead names and smear lengths
+        bead_types = self._force_field.bead_types[:]
         bead_names = [b.name for b in self._force_field.bead_types]
-
         smear_lengths = [b.smear_length for b in self._force_field.bead_types]
+        if self._num_dodecane_2bead == 0:
+            D6_index = bead_names.index('D6')
+            bead_types.pop(D6_index)
+            bead_names.pop(D6_index)
+            smear_lengths.pop(D6_index)
 
         # create monomers
         # TODO: find way to remove D6 bead when dodecane not present
-        kuhn_lengths = self._determine_kuhn_lengths()
+        kuhn_lengths = self._determine_kuhn_lengths(bead_types)
         s += self._tab + "monomers {{ # {}".format(" ".join(bead_names))
         s += "\n"
         s += self._tab*2 + "NSpecies = {}".format(len(bead_names))
@@ -205,12 +212,12 @@ class FTS(object):
         # add polyacrylate chains
         chain_index = 1
         for sequence in self._mol_num_dict.keys():
-            s += self._create_polyacrylate_chain(sequence, chain_index)
+            s += self._create_polyacrylate_chain(sequence, chain_index, bead_names)
             chain_index += 1
             
         # add dodecane
         if self._num_dodecane_2bead > 0:
-            s += self._create_dodecane_2bead(chain_index)
+            s += self._create_dodecane_2bead(chain_index, bead_names)
             chain_index += 1
 
         s += self._tab + "}"
@@ -243,8 +250,8 @@ class FTS(object):
         s += "\n"
         s += self._tab*2 + "interactions {"
         s += "\n"
-        for i, bead_type_1 in enumerate(self._force_field.bead_types):
-            for j, bead_type_2 in enumerate(self._force_field.bead_types[i:]):
+        for i, bead_type_1 in enumerate(bead_types):
+            for j, bead_type_2 in enumerate(bead_types[i:]):
                 gaussian = self._force_field.get_gaussian_potential(bead_type_1.name, bead_type_2.name)
                 B = gaussian.B * (np.pi / gaussian.Kappa)**(3./2.) / (R * 1.e-3 * self._force_field.temperature)
                 s += self._tab*3 + "BExclVolume{}{} = {}".format(i+1, i+j+1, B)
@@ -331,6 +338,14 @@ class FTS(object):
         return s
 
     def simulation_string(self):
+
+        bead_types = self._force_field.bead_types
+        bead_names = [b.name for b in bead_types]
+        if self._num_dodecane_2bead == 0:
+            D6_index = bead_names.index('D6')
+            bead_types.pop(D6_index)
+            bead_names.pop(D6_index)
+
         s = "\n"
         s += "simulation {"
         s += "\n"
@@ -340,7 +355,7 @@ class FTS(object):
         s += "\n"
         s += self._tab + "TimeStepDT  = {}".format(self._time_step_dt)
         s += "\n"
-        s += self._tab + "LambdaForceScale = {}".format(" ".join([str(self._lambda_force_scale[b.name]) for b in self._force_field.bead_types]))
+        s += self._tab + "LambdaForceScale = {}".format(" ".join([str(self._lambda_force_scale[b]) for b in bead_names]))
         s += "\n"
         s += "\n"
         s += self._tab + "NumTimeStepsPerBlock = {}".format(self._num_time_steps_per_block)
@@ -384,18 +399,29 @@ class FTS(object):
         s += "\n"
         return s
 
+    def parallel_string(self):
+        s = "\n"
+        s += "parallel {"
+        s += "\n"
+        s += self._tab + "CUDA_SelectDevice = {}".format(self._cuda_select_device)
+        s += "\n"
+        s += self._tab + "CUDA_ThreadBlockSize = {}".format(self._cuda_thread_block_size)
+        s += "\n"
+        s += "\n"
+        s += self._tab + "OpenMP_nthreads = {}".format(self._openmp_nthreads)
+        s += "\n"
+        s += "}"
+        return s
+
     _MONOMER_TO_BEAD_NAME = {'A4': ['Bpba', 'C4'],
                              'A12': ['Bpla', 'C6', 'E6'],
                              'mA12': ['Bplma', 'C6', 'E6']}
 
-    def _create_polyacrylate_chain(self, sequence, index):
+    def _create_polyacrylate_chain(self, sequence, index, bead_name_list):
 
         # initialize chain vol and bead count
         chain_volume = 0.0
         num_beads = 0
-
-        # bead name list
-        bead_name_list = [b.name for b in self._force_field.bead_types]
 
         # determine blocks
         monomer_list = acrylate_sequence_to_list(sequence)
@@ -490,10 +516,7 @@ class FTS(object):
 
         return s
 
-    def _create_dodecane_2bead(self, index):
-
-        # bead name list
-        bead_name_list = [b.name for b in self._force_field.bead_types]
+    def _create_dodecane_2bead(self, index, bead_name_list):
 
         # create string
         s = "\n"
@@ -527,11 +550,11 @@ class FTS(object):
     def _determine_kuhn_lengths(self, bead_types):
 
         # initialize array
-        kuhn_lengths = np.zeros(len(self._force_field.bead_types))
+        kuhn_lengths = np.zeros(len(bead_types))
 
         # determine kuhn lengths from like-like bonded interactions if possible
         like_bead_names = []
-        for i, bead_type in enumerate(self._force_field.bead_types):
+        for i, bead_type in enumerate(bead_types):
             try:
                 p = self._force_field.get_bonded_potential(bead_type.name, bead_type.name)
                 kuhn_lengths[i] = p.Dist0 / np.sqrt(6)
@@ -540,7 +563,7 @@ class FTS(object):
                 pass
 
         # determine kuhn lengths for other beads
-        for i, bead_type in enumerate(self._force_field.bead_types):
+        for i, bead_type in enumerate(bead_types):
             if kuhn_lengths[i] == 0:
                 for p in self._force_field.bonded_potentials:
                     if bead_type.name in [p.bead_name_1, p.bead_name_2]:
@@ -552,7 +575,7 @@ class FTS(object):
                             kuhn_lengths[i] = p.Dist0 / np.sqrt(6)
 
         # catch any stragglers
-        for i, bead_type in enumerate(self._force_field.bead_types):
+        for i, bead_type in enumerate(bead_types):
             if kuhn_lengths[i] == 0:
                 for p in self._force_field.bonded_potentials:
                     if bead_type.name in [p.bead_name_1, p.bead_name_2]:
@@ -570,6 +593,6 @@ if __name__ == '__main__':
     n_dod = .9/.1 * m_poly/m_dod * n_poly
     print(n_poly, n_dod)
     fts.add_polyacrylate("5*A4+5*A12", num_mol=n_poly)
-    fts.add_dodecane_2bead(num_mol=n_dod)
+    # fts.add_dodecane_2bead(num_mol=n_dod)
     print(fts.models_string())
     print(fts.simulation_string())
