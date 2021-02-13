@@ -172,10 +172,6 @@ class ForceField(object):
         return ff
 
     @property
-    def bead_types(self):
-        return self._bead_types
-
-    @property
     def bonded_potentials(self):
         return self._bonded_potentials
 
@@ -183,8 +179,18 @@ class ForceField(object):
     def gaussian_potentials(self):
         return self._gaussian_potentials
 
+    @property
+    def bead_types(self):
+        return self._bead_types
+
     def add_bead_type(self, bead_type):
         self._bead_types.append(bead_type)
+
+    def get_bead_type(self, bead_name):
+        for bead_type in self._bead_types:
+            if bead_name == bead_type.name:
+                return bead_type
+        raise ValueError("force field has no bead type with name '{}'".format(bead_name))
 
     def reorder_bead_types(self, bead_types):
         if len(self._bead_types) != len(bead_types):
