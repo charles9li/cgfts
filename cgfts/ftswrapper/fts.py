@@ -289,7 +289,7 @@ class FTS(object):
         s += "\n"
         s += self._tab*3 + "CalcPressure = {}".format(str(self._calc_pressure).lower())
         s += "\n"
-        s += self._tab*3 + "CalcStructureFactor = {}".format(str(self._calc_hamiltonian).lower())
+        s += self._tab*3 + "CalcStructureFactor = {}".format(str(self._calc_structure_factor).lower())
         s += "\n"
         s += self._tab*3 + "CalcDensityOperator = {}".format(str(self._calc_density_operator).lower())
         s += "\n"
