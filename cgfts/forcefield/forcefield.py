@@ -105,9 +105,9 @@ class Gaussian(_Potential):
         s += "\n 'Sigma' : 1.0000e+00 }"
         return s
 
-    def set_default_Kappa(self, temperature):
-        smear_length_1 = _SMEAR_LENGTHS[self.bead_name_1][temperature]
-        smear_length_2 = _SMEAR_LENGTHS[self.bead_name_2][temperature]
+    def set_default_Kappa(self, temperature, smear_length_scale=1.0):
+        smear_length_1 = _SMEAR_LENGTHS[self.bead_name_1][temperature] * smear_length_scale
+        smear_length_2 = _SMEAR_LENGTHS[self.bead_name_2][temperature] * smear_length_scale
         self.Kappa = 1. / (2. * (smear_length_1**2 + smear_length_2**2))
 
 
