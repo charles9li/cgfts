@@ -61,6 +61,7 @@ class BaseSystem(object):
         self._mol_type_dict = OrderedDict()
         self._mol_num_dict = OrderedDict()
         self._bond_types = []
+        self._smear_length_scale = 1.0
 
     @property
     def system(self):
@@ -85,6 +86,14 @@ class BaseSystem(object):
     @property
     def cut(self):
         return self._cut
+
+    @property
+    def smear_length_scale(self):
+        return self._smear_length_scale
+
+    @smear_length_scale.setter
+    def smear_length_scale(self, value):
+        self._smear_length_scale = value
 
     def create_system(self, *args, **kwargs):
         pass
@@ -406,7 +415,7 @@ class SystemCG(BaseSystem):
                 if p.Name.startswith('Gaussian'):
                     potential_string = ">>> POTENTIAL {}\n{}".format(p.Name, p.ParamString())
                     potential = Gaussian.from_string(potential_string)
-                    potential.set_default_Kappa(self.temperature)
+                    potential.set_default_Kappa(self.temperature, smear_length_scale=self._smear_length_scale)
                     s.ForceField.SetParamString(str(potential))
 
     def set_bonded_parameter(self, potential_name, parameter_name, value):
