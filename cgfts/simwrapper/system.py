@@ -48,7 +48,7 @@ _DEFAULT_PRESSURES = {293.15: 4500.0,
 
 class BaseSystem(object):
 
-    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', *args, **kwargs):
+    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', time_step=0.005, *args, **kwargs):
         self._system = None
         self.temperature = temperature
         if pressure is None:
@@ -57,6 +57,7 @@ class BaseSystem(object):
             self.pressure = pressure
         self._ensemble = ensemble
         self._cut = cut
+        self._time_step = time_step
         self._bead_type_dict = {}
         self._mol_type_dict = OrderedDict()
         self._mol_num_dict = OrderedDict()
@@ -103,8 +104,8 @@ class BaseSystem(object):
 
 class SystemCG(BaseSystem):
 
-    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt'):
-        super(SystemCG, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble)
+    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', time_step=0.005):
+        super(SystemCG, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble, time_step=time_step)
         self._traj_list = []
         self._residue_map = {}
         self._systems = []
@@ -328,7 +329,7 @@ class SystemCG(BaseSystem):
             print("configuring integrator")
             Int = Sys.Int
             Int.Method = Int.Methods.VVIntegrate
-            Int.Method.TimeStep = 0.005
+            Int.Method.TimeStep = self._time_step
             Int.Method.Thermostat = Int.Method.ThermostatLangevin
             Int.Method.LangevinGamma = 1.0
             Int.Method.Barostat = Int.Method.BarostatMonteCarlo
@@ -441,8 +442,8 @@ class SystemCG(BaseSystem):
 
 class SystemRun(BaseSystem):
 
-    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt'):
-        super(SystemRun, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble)
+    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', time_step=0.005,):
+        super(SystemRun, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble, time_step=time_step)
 
     def add_dodecane_2bead(self, num_mol=1):
         bead_name_list = ['D6', 'D6']
@@ -560,7 +561,7 @@ class SystemRun(BaseSystem):
         # configure integrator
         integrator = self._system.Int
         integrator.Method = integrator.Methods.VVIntegrate
-        integrator.Method.TimeStep = 0.005
+        integrator.Method.TimeStep = self._time_step
         integrator.Method.Thermostat = integrator.Method.ThermostatLangevin
         integrator.Method.LangevinGamma = 1.0
         if self._ensemble == 'npt':
