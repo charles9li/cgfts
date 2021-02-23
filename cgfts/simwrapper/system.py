@@ -401,6 +401,11 @@ class SystemCG(BaseSystem):
         potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
         self.set_gaussian_parameter(potential_name, 'B', value)
 
+    def set_gaussian_Kappa(self, bead_name_1, bead_name_2, value):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_gaussian_parameter(potential_name, 'Kappa', value)
+
     def set_default_gaussian_Kappa(self, smear_length_scale=1.0):
         for s in self._systems:
             for p in s.ForceField:
@@ -408,6 +413,15 @@ class SystemCG(BaseSystem):
                     potential_string = ">>> POTENTIAL {}\n{}".format(p.Name, p.ParamString())
                     potential = Gaussian.from_string(potential_string)
                     potential.set_default_Kappa(self.temperature, smear_length_scale=smear_length_scale)
+                    s.ForceField.SetParamString(str(potential))
+
+    def set_gaussian_Kappa_all(self, value):
+        for s in self._systems:
+            for p in s.ForceField:
+                if p.Name.startswith('Gaussian'):
+                    potential_string = ">>> POTENTIAL {}\n{}".format(p.Name, p.ParamString())
+                    potential = Gaussian.from_string(potential_string)
+                    potential.Kappa = value
                     s.ForceField.SetParamString(str(potential))
 
     def set_bonded_parameter(self, potential_name, parameter_name, value):
@@ -429,14 +443,16 @@ class SystemCG(BaseSystem):
         potential_name = "Bonded_{}_{}".format(bead_name_1, bead_name_2)
         self.set_bonded_parameter(potential_name, 'FConst', value)
 
-    def run(self, steps_equil, steps_prod, steps_stride):
+    def run(self, steps_equil, steps_prod, steps_stride, constrain_mode=0):
         for opt in self._optimizers:
             opt.StepsEquil = steps_equil
             opt.StepsProd = steps_prod
             opt.StepsStride = steps_stride
+            opt.ConstrainMode = constrain_mode
         weights = [1.]*len(self._optimizers)
         optimizer = sim.srel.OptimizeMultiTrajClass(self._optimizers, Weights=weights)
         optimizer.FilePrefix = ("system")
+        optimizer.ConstrainMode = constrain_mode
         optimizer.RunConjugateGradient(MaxIter=None, SteepestIter=0)
 
 
