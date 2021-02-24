@@ -461,6 +461,12 @@ class SystemRun(BaseSystem):
     def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', time_step=0.005,):
         super(SystemRun, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble, time_step=time_step)
 
+    def add_dodecane_1bead(self, num_mol=1):
+        bead_name_list = ['D12']
+        mol_type = self._create_mol_type("dodecane", bead_name_list)
+        self._mol_type_dict[tuple(bead_name_list)] = mol_type
+        self._mol_num_dict[tuple(bead_name_list)] = num_mol
+
     def add_dodecane_2bead(self, num_mol=1):
         bead_name_list = ['D6', 'D6']
         mol_type = self._create_mol_type("dodecane", bead_name_list)
@@ -468,6 +474,28 @@ class SystemRun(BaseSystem):
         self._bond_types.append(tuple(['D6', 'D6']))
         self._mol_type_dict[tuple(bead_name_list)] = mol_type
         self._mol_num_dict[tuple(bead_name_list)] = num_mol
+
+    _MONOMER_TO_BEAD_NAME_1BEAD = {'A4': ['A4'],
+                                   'A12': ['A12'],
+                                   'mA12': ['mA12']}
+
+    def add_polyacrylate_1bead(self, sequence, num_mol=1):
+        monomer_list = acrylate_sequence_to_list(sequence)
+        bead_name_list = []
+        for monomer in monomer_list:
+            bead_name_list.extend(self._MONOMER_TO_BEAD_NAME[monomer])
+        mol_type = self._create_mol_type(sequence, bead_name_list)
+
+        for i in range(len(monomer_list) - 1):
+            mol_type.Bond(i, i+1)
+            bead_name_1 = bead_name_list[i]
+            bead_name_2 = bead_name_list[i+1]
+            bond_type = tuple(np.sort([bead_name_1, bead_name_2]))
+            if bond_type not in self._bond_types:
+                self._bond_types.append(bond_type)
+
+        self._mol_type_dict[tuple(monomer_list)] = mol_type
+        self._mol_num_dict[tuple(monomer_list)] = num_mol
         
     _MONOMER_TO_BEAD_NAME = {'A4': ['Bpba', 'C4'],
                              'A12': ['Bpla', 'C6', 'E6'],
