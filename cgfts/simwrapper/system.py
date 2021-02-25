@@ -483,7 +483,7 @@ class SystemRun(BaseSystem):
         monomer_list = acrylate_sequence_to_list(sequence)
         bead_name_list = []
         for monomer in monomer_list:
-            bead_name_list.extend(self._MONOMER_TO_BEAD_NAME[monomer])
+            bead_name_list.extend(self._MONOMER_TO_BEAD_NAME_1BEAD[monomer])
         mol_type = self._create_mol_type(sequence, bead_name_list)
 
         for i in range(len(monomer_list) - 1):
