@@ -57,6 +57,12 @@ class BeadType(object):
         self.name = name
         self.smear_length = smear_length
 
+    def volume(self, temperature):
+        try:
+            return _SMEAR_LENGTHS[self.name][temperature] ** 3
+        except KeyError:
+            return self.smear_length ** 3
+
 
 class _Potential(object):
 
@@ -198,6 +204,9 @@ class ForceField(object):
             if bead_name == bead_type.name:
                 return bead_type
         raise ValueError("force field has no bead type with name '{}'".format(bead_name))
+
+    def get_bead_volume(self, bead_name):
+        return self.get_bead_type(bead_name).volume(self.temperature)
 
     def reorder_bead_types(self, bead_types):
         if len(self._bead_types) != len(bead_types):
