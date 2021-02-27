@@ -433,7 +433,7 @@ class FTS(object):
         for i, monomer in enumerate(monomer_list):
 
             # add to volume and bead count
-            chain_volume += np.sum([self._force_field.get_bead_type(b).smear_length**3 for b in self._MONOMER_TO_BEAD_NAME[monomer]])
+            chain_volume += np.sum([self._force_field.get_bead_volume(b) for b in self._MONOMER_TO_BEAD_NAME[monomer]])
             num_beads += len(self._MONOMER_TO_BEAD_NAME[monomer])
 
             # add backbone graft position for side chain
