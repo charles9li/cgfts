@@ -536,12 +536,18 @@ class SystemRun(BaseSystem):
         self._mol_num_dict[tuple(monomer_list)] = num_mol
 
     def add_pba_partial_side_chain(self, num_backbone=5, num_side_chain=5, num_mol=1):
-        bead_name_list = ['A4']*num_backbone + ['C4']*num_side_chain
+        bead_name_list = ['Bpba']*num_backbone + ['C4']*num_side_chain
         mol_type = self._create_mol_type("{}A4_{}C4".format(num_backbone, num_side_chain), bead_name_list)
         for i in range(num_backbone - 1):
             mol_type.Bond(i, i+1)
+            bond_type = tuple(np.sort(['Bpba', 'Bpba']))
+            if bond_type not in self._bond_types:
+                self._bond_types.append(bond_type)
         for i in range(num_side_chain):
             mol_type.Bond(i, i+num_backbone)
+            bond_type = tuple(np.sort(['Bpba', 'C4']))
+            if bond_type not in self._bond_types:
+                self._bond_types.append(bond_type)
         self._mol_type_dict[tuple(bead_name_list)] = mol_type
         self._mol_num_dict[tuple(bead_name_list)] = num_mol
 
