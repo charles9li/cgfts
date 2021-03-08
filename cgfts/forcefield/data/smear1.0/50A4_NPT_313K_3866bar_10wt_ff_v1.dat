@@ -1,0 +1,45 @@
+>>> POTENTIAL Gaussian_D6_D6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 3.8899e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_Bpba_D6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 4.2893e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_C4_D6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 9.9770e-17 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_Bpba_Bpba
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 3.2313e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_Bpba_C4
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 6.9268e-16 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_C4_C4
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.4777e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Bonded_Bpba_Bpba
+{'Dist0' : 3.8815e-01 ,
+ 'FConst' : 2.0810e+03 }
+>>> POTENTIAL Bonded_Bpba_C4
+{'Dist0' : 4.1939e-01 ,
+ 'FConst' : 1.5184e+03 }
+>>> POTENTIAL Bonded_D6_D6
+{'Dist0' : 6.5010e-01 ,
+ 'FConst' : 3.4733e+02 }

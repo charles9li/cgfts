@@ -1,0 +1,72 @@
+>>> POTENTIAL Gaussian_D6_D6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 3.8704e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_D6_E6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 4.0059e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_C6_D6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.2972e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_Bpla_D6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 4.0097e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_E6_E6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 0.0000e+00 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_C6_E6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 6.5908e-15 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_Bpla_E6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.1343e+00 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_C6_C6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 7.9397e-15 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_Bpla_C6
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 4.2873e-15 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_Bpla_Bpla
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.2280e-15 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Bonded_Bpla_Bpla
+{'Dist0' : 3.8664e-01 ,
+ 'FConst' : 1.8820e+03 }
+>>> POTENTIAL Bonded_Bpla_C6
+{'Dist0' : 5.0645e-01 ,
+ 'FConst' : 5.9950e+02 }
+>>> POTENTIAL Bonded_C6_E6
+{'Dist0' : 6.4822e-01 ,
+ 'FConst' : 3.7114e+02 }
+>>> POTENTIAL Bonded_D6_D6
+{'Dist0' : 6.4953e-01 ,
+ 'FConst' : 3.4795e+02 }
