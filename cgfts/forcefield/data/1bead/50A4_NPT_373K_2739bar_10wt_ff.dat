@@ -1,0 +1,21 @@
+>>> POTENTIAL Gaussian_A4_A4
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 3.7446e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_A4_D12
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 6.8112e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_D12_D12
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.1792e+00 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Bonded_A4_A4
+{'Dist0' : 5.6571e-01 ,
+ 'FConst' : 1.2941e+02 }
