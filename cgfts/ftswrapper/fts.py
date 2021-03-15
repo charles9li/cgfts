@@ -11,14 +11,17 @@ from cgfts.utils import *
 
 class FTS(object):
 
-    def __init__(self, temperature):
+    def __init__(self, temperature, one_bead=False):
         super(FTS, self).__init__()
+
+        self._one_bead = one_bead
 
         # forcefield and system
         self._force_field = ForceField(temperature)
         self._mol_num_dict = OrderedDict()
         self._mol_vol_dict = OrderedDict()
         self._mol_num_bead_dict = OrderedDict()
+        self._num_dodecane_1bead = 0
         self._num_dodecane_2bead = 0
 
         # fts system parameters
@@ -138,6 +141,9 @@ class FTS(object):
     def add_polyacrylate(self, sequence, num_mol=1):
         self._mol_num_dict[sequence] = num_mol
 
+    def add_dodecane_1bead(self, num_mol=1):
+        self._num_dodecane_1bead = num_mol
+
     def add_dodecane_2bead(self, num_mol=1):
         self._num_dodecane_2bead = num_mol
 
@@ -212,10 +218,13 @@ class FTS(object):
         # add polyacrylate chains
         chain_index = 1
         for sequence in self._mol_num_dict.keys():
-            s += self._create_polyacrylate_chain(sequence, chain_index, bead_names)
+            if self._one_bead:
+                s += self._create_polyacrylate_chain_1bead(sequence, chain_index, bead_names)
+            else:
+                s += self._create_polyacrylate_chain(sequence, chain_index, bead_names)
             chain_index += 1
             
-        # add dodecane
+        # add 2-bead dodecane
         if self._num_dodecane_2bead > 0:
             s += self._create_dodecane_2bead(chain_index, bead_names)
             chain_index += 1
@@ -223,6 +232,25 @@ class FTS(object):
         s += self._tab + "}"
         s += "\n"
         s += "\n"
+
+        # add 1-bead dodecane
+        if self._num_dodecane_1bead > 0:
+            s += self._tab + "smallmolecules {"
+            s += "\n"
+            s += self._tab*2 + "PolymerReferenceN = 1"
+            s += "\n"
+            s += self._tab*2 + "NSmallMoleculeTypes = 1"
+            s += "\n"
+            s += "\n"
+            s += self._tab*2 + "smallmolecule1 {"
+            s += "\n"
+            s += self._tab*3 + "Species = {}".format(bead_names.index('D12') + 1)
+            s += "\n"
+            s += self._tab*2 + "}"
+            s += "\n"
+            s += self._tab + "}"
+            s += "\n"
+            s += "\n"
 
         # create model
         s += self._tab + "model1 {"
@@ -411,6 +439,71 @@ class FTS(object):
         s += self._tab + "OpenMP_nthreads = {}".format(self._openmp_nthreads)
         s += "\n"
         s += "}"
+        return s
+
+    def _create_polyacrylate_chain_1bead(self, sequence, index, bead_name_list):
+
+        # initialize chain vol and bead count
+        chain_volume = 0.0
+        num_beads = 0
+
+        # determine blocks
+        monomer_list = acrylate_sequence_to_list(sequence)
+        block_species = []
+        n_per_block = []
+        backbone_grafting_positions = defaultdict(list)
+        curr_monomer = None
+        curr_block_length = 0
+        for i, monomer in enumerate(monomer_list):
+
+            # add to volume and bead count
+            chain_volume += self._force_field.get_bead_volume(monomer)
+            num_beads += 1
+
+            # add backbone graft position for side chain
+            backbone_grafting_positions[monomer].append(i)
+
+            # add to current block or start new one
+            if curr_monomer is None:
+                curr_monomer = monomer
+            if monomer != curr_monomer:
+                block_species.append(bead_name_list.index(curr_monomer) + 1)
+                n_per_block.append(curr_block_length)
+                curr_monomer = monomer
+                curr_block_length = 0
+            curr_block_length += 1
+        block_species.append(bead_name_list.index(curr_monomer) + 1)
+        n_per_block.append(curr_block_length)
+
+        # chain settings
+        s = "\n"
+        s += self._tab*2 + "chain{} {{".format(index)
+        s += "\n"
+        s += self._tab*3 + "Label = {}".format(sequence)
+        s += "\n"
+        s += self._tab*3 + "Architecture = linear"
+        s += "\n"
+        s += self._tab*3 + "Statistics = FJC"
+        s += "\n"
+        s += "\n"
+
+        # backbone
+        s += self._tab*3 + "NBlocks = {}".format(len(block_species))
+        s += "\n"
+        s += self._tab*3 + "BlockSpecies = {}".format(" ".join([str(b) for b in block_species]))
+        s += "\n"
+        s += self._tab*3 + "NBeads = {}".format(np.sum(n_per_block))
+        s += "\n"
+        s += self._tab*3 + "NPerBlock = {}".format(" ".join([str(n) for n in n_per_block]))
+        s += "\n"
+
+        s += self._tab*2 + "}"
+        s += "\n"
+
+        # add volume and bead count to dictionaries
+        self._mol_vol_dict[sequence] = chain_volume
+        self._mol_num_bead_dict[sequence] = num_beads
+
         return s
 
     _MONOMER_TO_BEAD_NAME = {'A4': ['Bpba', 'C4'],
