@@ -1,0 +1,45 @@
+>>> POTENTIAL Gaussian_A4_A4
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 3.7446e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_A4_D12
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 6.8112e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_A12_A4
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 7.2139e-01 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_D12_D12
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.1832e+00 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_A12_D12
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.3185e+00 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Gaussian_A12_A12
+{'Epsilon' : 0.0000e+00 ,
+ 'B' : 1.3739e+00 ,
+ 'Kappa' : 2.5000e-01 ,
+ 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }
+>>> POTENTIAL Bonded_A12_A4
+{'Dist0' : 7.4113e-01 ,
+ 'FConst' : 3.3347e+01 }
+>>> POTENTIAL Bonded_A4_A4
+{'Dist0' : 5.6571e-01 ,
+ 'FConst' : 1.2941e+02 }
+>>> POTENTIAL Bonded_A12_A12
+{'Dist0' : 7.5809e-01 ,
+ 'FConst' : 1.2937e+01 }
