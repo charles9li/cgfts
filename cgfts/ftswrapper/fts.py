@@ -82,8 +82,8 @@ class FTS(object):
         self._tab = "  "
 
     @classmethod
-    def from_file(cls, temperature, ff_file):
-        fts = cls(temperature)
+    def from_file(cls, temperature, ff_file, one_bead=False):
+        fts = cls(temperature, one_bead=one_bead)
         fts._force_field = ForceField.from_file(temperature, ff_file)
         return fts
 
@@ -180,10 +180,11 @@ class FTS(object):
         bead_names = [b.name for b in self._force_field.bead_types]
         smear_lengths = [b.smear_length for b in self._force_field.bead_types]
         if self._num_dodecane_2bead == 0:
-            D6_index = bead_names.index('D6')
-            bead_types.pop(D6_index)
-            bead_names.pop(D6_index)
-            smear_lengths.pop(D6_index)
+            if 'D6' in bead_names:
+                D6_index = bead_names.index('D6')
+                bead_types.pop(D6_index)
+                bead_names.pop(D6_index)
+                smear_lengths.pop(D6_index)
 
         # create monomers
         # TODO: find way to remove D6 bead when dodecane not present
@@ -251,6 +252,8 @@ class FTS(object):
             s += self._tab + "}"
             s += "\n"
             s += "\n"
+            self._mol_vol_dict['D12'] = self._force_field.get_bead_volume('D12')
+            self._mol_num_bead_dict['D12'] = self._num_dodecane_1bead
 
         # create model
         s += self._tab + "model1 {"
@@ -370,9 +373,10 @@ class FTS(object):
         bead_types = self._force_field.bead_types
         bead_names = [b.name for b in bead_types]
         if self._num_dodecane_2bead == 0:
-            D6_index = bead_names.index('D6')
-            bead_types.pop(D6_index)
-            bead_names.pop(D6_index)
+            if 'D6' in bead_names:
+                D6_index = bead_names.index('D6')
+                bead_types.pop(D6_index)
+                bead_names.pop(D6_index)
 
         s = "\n"
         s += "simulation {"
