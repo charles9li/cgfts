@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 import os
 
 from scipy.constants import N_A, R
@@ -125,7 +125,7 @@ class SystemCG(BaseSystem):
         traj_union.unitcell_lengths = traj_union.unitcell_lengths / 10.
         self._traj_list.append(traj_union)
 
-    def add_residue_map(self, residue_name, bead_name_list, num_atoms_per_bead, atom_masses):
+    def add_residue_map(self, residue_name, bead_name_list, num_atoms_per_bead, atom_masses=None):
         self._residue_map[residue_name] = (bead_name_list, num_atoms_per_bead, atom_masses)
 
     def create_system(self, load=True):
@@ -149,6 +149,16 @@ class SystemCG(BaseSystem):
             MolTypeList = []
             MolTypeDict = OrderedDict()
             MolNumDict = OrderedDict()
+
+            # create H atom map
+            H_atom_map = defaultdict(list)
+            H_atom_indices = topology.select('element == H')
+            for bond in topology.bonds:
+                if bond[0].index in H_atom_indices:
+                    H_atom_map[bond[1].index].append(bond[0].index)
+                elif bond[1].index in H_atom_indices:
+                    H_atom_map[bond[0].index].append(bond[1].index)
+
             for chain in topology.chains:
 
                 bead_type_list = []
@@ -184,6 +194,22 @@ class SystemCG(BaseSystem):
                     indices_split = np.split(heavy_atom_indices, np.cumsum(num_atoms_per_bead[:-1]))
                     masses_split = np.split(masses_residue, np.cumsum(num_atoms_per_bead[:-1]))
                     for bead_type, indices, masses in zip(bead_types, indices_split, masses_split):
+
+                        # add hydrogen indices
+                        indices_new = []
+                        for index in indices:
+                            indices_new.append(index)
+                            for H_index in H_atom_map[index]:
+                                indices_new.append(H_index)
+                        indices = indices_new
+
+                        # get masses from elements if not provided
+                        if masses is None:
+                            masses = []
+                            for index in indices:
+                                masses.append(topology.atom(index).element.mass)
+                            masses = np.array(masses)
+
                         AtomMap = sim.atommap.AtomMap(list(indices), CG_bead_index, Mass1=masses, Atom2Name=bead_type)
                         Map.append(AtomMap)
                         if bead_type not in CG_atom_type_dict.keys():
