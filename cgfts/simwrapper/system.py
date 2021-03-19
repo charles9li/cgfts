@@ -186,9 +186,12 @@ class SystemCG(BaseSystem):
                                          "number of heavy atoms in residue {}.".format(residue.name))
 
                     # check that sum of num_atoms_per_bead equals length of mass of heavy atoms
-                    if np.sum(num_atoms_per_bead) != len(masses_residue):
-                        raise ValueError("Sum of atoms per bead list does not match the "
-                                         "number of heavy atom masses in residue {}.".format(residue.name))
+                    if masses_residue is not None:
+                        if np.sum(num_atoms_per_bead) != len(masses_residue):
+                            raise ValueError("Sum of atoms per bead list does not match the "
+                                             "number of heavy atom masses in residue {}.".format(residue.name))
+                    else:
+                        masses_residue = np.zeros(np.sum(num_atoms_per_bead))
 
                     # create maps
                     indices_split = np.split(heavy_atom_indices, np.cumsum(num_atoms_per_bead[:-1]))
@@ -204,7 +207,7 @@ class SystemCG(BaseSystem):
                         indices = indices_new
 
                         # get masses from elements if not provided
-                        if masses is None:
+                        if np.sum(masses) == 0.0:
                             masses = []
                             for index in indices:
                                 masses.append(topology.atom(index).element.mass)
