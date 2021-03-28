@@ -253,7 +253,8 @@ class FTS(object):
             s += "\n"
             s += "\n"
             self._mol_vol_dict['D12'] = self._force_field.get_bead_volume('D12')
-            self._mol_num_bead_dict['D12'] = self._num_dodecane_1bead
+            self._mol_num_bead_dict['D12'] = 1
+            self._mol_num_dict['D12'] = self._num_dodecane_1bead
 
         # create model
         s += self._tab + "model1 {"
