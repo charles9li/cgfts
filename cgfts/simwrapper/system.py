@@ -392,6 +392,12 @@ class SystemCG(BaseSystem):
                 if p.Name == potential_name:
                     getattr(p.Param, parameter_name).Fixed = fix
 
+    def set_parameter_min(self, potential_name, parameter_name, min_val=0.0):
+        for s in self._systems:
+            for p in s.ForceField:
+                if p.Name == potential_name:
+                    getattr(p.Param, parameter_name).Min = min_val
+
     def fix_gaussian_B(self, bead_name_1, bead_name_2):
         bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
         potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
@@ -429,6 +435,17 @@ class SystemCG(BaseSystem):
         bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
         potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
         self.set_gaussian_parameter(potential_name, 'B', value)
+
+    def set_gaussian_B_min(self, bead_name_1, bead_name_2, value):
+        bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
+        potential_name = "Gaussian_{}_{}".format(bead_name_1, bead_name_2)
+        self.set_parameter_min(potential_name, 'B', value)
+        
+    def set_gaussian_B_min_all(self, value):
+        for s in self._systems:
+            for p in s.ForceField:
+                if p.Name.startswith('Gaussian'):
+                    self.set_parameter_min(p.Name, 'B', min_val=value)
 
     def set_gaussian_Kappa(self, bead_name_1, bead_name_2, value):
         bead_name_1, bead_name_2 = np.sort([bead_name_1, bead_name_2])
