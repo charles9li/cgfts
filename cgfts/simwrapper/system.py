@@ -104,13 +104,14 @@ class BaseSystem(object):
 
 class SystemCG(BaseSystem):
 
-    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', time_step=0.005):
+    def __init__(self, temperature, pressure=None, cut=2.5, ensemble='npt', time_step=0.005, spline=False):
         super(SystemCG, self).__init__(temperature, pressure=pressure, cut=cut, ensemble=ensemble, time_step=time_step)
         self._traj_list = []
         self._residue_map = {}
         self._systems = []
         self._optimizers = []
         self._potential_fix = []
+        self._spline = spline
 
     @property
     def systems(self):
@@ -301,39 +302,55 @@ class SystemCG(BaseSystem):
             for i, BeadName1 in enumerate(BeadNameList):
                 for BeadName2 in BeadNameList[i:]:
                     BeadName1_sorted, BeadName2_sorted = np.sort([BeadName1, BeadName2])
-                    Label = "Gaussian_{}_{}".format(BeadName1_sorted, BeadName2_sorted)
-                    BeadType1 = CG_atom_type_dict[BeadName1_sorted]
-                    BeadType2 = CG_atom_type_dict[BeadName2_sorted]
-                    Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2])
-                    Gaussian = sim.potential.LJGaussian(Sys, Cut=self._cut, Filter=Filter,
-                                                        B=1.0, Kappa=1.0, Dist0=0.0, Sigma=1.0, Epsilon=0.0,
-                                                        Label=Label)
-                    Gaussian.Param.Kappa.Fixed = True
-                    Gaussian.Param.Dist0.Fixed = True
-                    Gaussian.Param.Sigma.Fixed = True
-                    Gaussian.Param.Epsilon.Fixed = True
-                    # for fix in self._potential_fix:
-                    #     if Label == fix[0]:
-                    #         getattr(Gaussian.Param, fix[1]).Fixed = fix[2]
-                    ForceField.append(Gaussian)
+                    if self._spline:
+                        Label = "Spline_{}_{}".format(BeadName1_sorted, BeadName2_sorted)
+                        BeadType1 = CG_atom_type_dict[BeadName1_sorted]
+                        BeadType2 = CG_atom_type_dict[BeadName2_sorted]
+                        Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2])
+                        Spline = sim.potential.PairSpline(Sys, Cut=self._cut, Filter=Filter, Label=Label)
+                        ForceField.append(Spline)
+                    else:
+                        Label = "Gaussian_{}_{}".format(BeadName1_sorted, BeadName2_sorted)
+                        BeadType1 = CG_atom_type_dict[BeadName1_sorted]
+                        BeadType2 = CG_atom_type_dict[BeadName2_sorted]
+                        Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2])
+                        Gaussian = sim.potential.LJGaussian(Sys, Cut=self._cut, Filter=Filter,
+                                                            B=1.0, Kappa=1.0, Dist0=0.0, Sigma=1.0, Epsilon=0.0,
+                                                            Label=Label)
+                        Gaussian.Param.Kappa.Fixed = True
+                        Gaussian.Param.Dist0.Fixed = True
+                        Gaussian.Param.Sigma.Fixed = True
+                        Gaussian.Param.Epsilon.Fixed = True
+                        # for fix in self._potential_fix:
+                        #     if Label == fix[0]:
+                        #         getattr(Gaussian.Param, fix[1]).Fixed = fix[2]
+                        ForceField.append(Gaussian)
 
             # create Bonded potentials
             print("creating bonded potentials")
             for BondType in BondTypes:
                 BeadName1, BeadName2 = BondType
-                Label = "Bonded_{}_{}".format(BeadName1, BeadName2)
-                BeadType1 = CG_atom_type_dict[BeadName1]
-                BeadType2 = CG_atom_type_dict[BeadName2]
-                Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2], Bonded=True)
-                Bonded = sim.potential.Bond(Sys, Filter=Filter,
-                                            Dist0=1.0, FConst=1.0,
-                                            Label=Label)
-                Bonded.Param.Dist0.Fixed = False
-                Bonded.Param.FConst.Fixed = False
-                # for fix in self._potential_fix:
-                #     if Label == fix[0]:
-                #         getattr(Bonded.Param, fix[1]).Fixed = fix[2]
-                ForceField.append(Bonded)
+                if self._spline:
+                    Label = "Bonded_Spline_{}_{}".format(BeadName1, BeadName2)
+                    BeadType1 = CG_atom_type_dict[BeadName1]
+                    BeadType2 = CG_atom_type_dict[BeadName2]
+                    Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2], Bonded=True)
+                    Bonded_Spline = sim.potential.PairSpline(Sys, Filter=Filter, Label=Label)
+                    ForceField.append(Bonded_Spline)
+                else:
+                    Label = "Bonded_{}_{}".format(BeadName1, BeadName2)
+                    BeadType1 = CG_atom_type_dict[BeadName1]
+                    BeadType2 = CG_atom_type_dict[BeadName2]
+                    Filter = sim.atomselect.PolyFilter([BeadType1, BeadType2], Bonded=True)
+                    Bonded = sim.potential.Bond(Sys, Filter=Filter,
+                                                Dist0=1.0, FConst=1.0,
+                                                Label=Label)
+                    Bonded.Param.Dist0.Fixed = False
+                    Bonded.Param.FConst.Fixed = False
+                    # for fix in self._potential_fix:
+                    #     if Label == fix[0]:
+                    #         getattr(Bonded.Param, fix[1]).Fixed = fix[2]
+                    ForceField.append(Bonded)
 
             # add potentials to forcefield
             Sys.ForceField.extend(ForceField)
