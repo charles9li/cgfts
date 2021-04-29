@@ -23,6 +23,7 @@ class FTS(object):
         self._mol_num_bead_dict = OrderedDict()
         self._num_dodecane_1bead = 0
         self._num_dodecane_2bead = 0
+        self._num_dodecane_3bead = 0
 
         # fts system parameters
         self._input_file_version = 3
@@ -147,6 +148,9 @@ class FTS(object):
     def add_dodecane_2bead(self, num_mol=1):
         self._num_dodecane_2bead = num_mol
 
+    def add_dodecane_3bead(self, num_mol=1):
+        self._num_dodecane_3bead = num_mol
+
     def create_input_file(self, filepath="params.in"):
 
         # file header
@@ -228,6 +232,11 @@ class FTS(object):
         # add 2-bead dodecane
         if self._num_dodecane_2bead > 0:
             s += self._create_dodecane_2bead(chain_index, bead_names)
+            chain_index += 1
+
+        # add 3-bead dodecane
+        if self._num_dodecane_3bead > 0:
+            s += self._create_dodecane_3bead(chain_index, bead_names)
             chain_index += 1
 
         s += self._tab + "}"
@@ -515,11 +524,23 @@ class FTS(object):
                              'A12': ['Bpla', 'C6', 'E6'],
                              'mA12': ['Bplma', 'C6', 'E6']}
 
-    def _create_polyacrylate_chain(self, sequence, index, bead_name_list):
+    _MONOMER_TO_BEAD_NAME_V2 = {'A4': ['Bpba', 'D4'],
+                                'A12': ['Bpla', 'D4', 'D4', 'D4'],
+                                'mA12': ['Bplma', 'D4', 'D4', 'D4']}
+
+    def _create_polyacrylate_chain(self, sequence, index, bead_name_list, version=1):
 
         # initialize chain vol and bead count
         chain_volume = 0.0
         num_beads = 0
+
+        # determine monomer to bead name
+        if version == 1:
+            monomer_to_bead_name = self._MONOMER_TO_BEAD_NAME
+        elif version == 2:
+            monomer_to_bead_name = self._MONOMER_TO_BEAD_NAME_V2
+        else:
+            raise ValueError("Invalid version.")
 
         # determine blocks
         monomer_list = acrylate_sequence_to_list(sequence)
@@ -531,8 +552,8 @@ class FTS(object):
         for i, monomer in enumerate(monomer_list):
 
             # add to volume and bead count
-            chain_volume += np.sum([self._force_field.get_bead_volume(b) for b in self._MONOMER_TO_BEAD_NAME[monomer]])
-            num_beads += len(self._MONOMER_TO_BEAD_NAME[monomer])
+            chain_volume += np.sum([self._force_field.get_bead_volume(b) for b in monomer_to_bead_name[monomer]])
+            num_beads += len(monomer_to_bead_name[monomer])
 
             # add backbone graft position for side chain
             backbone_grafting_positions[monomer].append(i)
@@ -541,12 +562,12 @@ class FTS(object):
             if curr_monomer is None:
                 curr_monomer = monomer
             if monomer != curr_monomer:
-                block_species.append(bead_name_list.index(self._MONOMER_TO_BEAD_NAME[curr_monomer][0]) + 1)
+                block_species.append(bead_name_list.index(monomer_to_bead_name[curr_monomer][0]) + 1)
                 n_per_block.append(curr_block_length)
                 curr_monomer = monomer
                 curr_block_length = 0
             curr_block_length += 1
-        block_species.append(bead_name_list.index(self._MONOMER_TO_BEAD_NAME[curr_monomer][0]) + 1)
+        block_species.append(bead_name_list.index(monomer_to_bead_name[curr_monomer][0]) + 1)
         n_per_block.append(curr_block_length)
 
         # chain settings
@@ -582,7 +603,7 @@ class FTS(object):
         # side arms
         side_arm_index = 1
         for monomer, grafting_positions in backbone_grafting_positions.items():
-            side_arm_bead_names = self._MONOMER_TO_BEAD_NAME[monomer][1:]
+            side_arm_bead_names = monomer_to_bead_name[monomer][1:]
             side_arm_block_species = [bead_name_list.index(b) + 1 for b in side_arm_bead_names]
             s += "\n"
             s += self._tab*3 + "sidearmtype{} {{".format(side_arm_index)
@@ -642,6 +663,37 @@ class FTS(object):
         self._mol_num_dict["dodecane"] = self._num_dodecane_2bead
         self._mol_vol_dict["dodecane"] = 2*self._force_field.get_bead_volume('D6')
         self._mol_num_bead_dict["dodecane"] = 2
+
+        return s
+
+    def _create_dodecane_3bead(self, index, bead_name_list):
+
+        # create string
+        s = "\n"
+        s += self._tab*2 + "chain{} {{".format(index)
+        s += "\n"
+        s += self._tab*3 + "Label = dodecane"
+        s += "\n"
+        s += self._tab*3 + "Architecture = linear"
+        s += "\n"
+        s += self._tab*3 + "Statistics = FJC"
+        s += "\n"
+        s += "\n"
+        s += self._tab*3 + "Nbeads = 3"
+        s += "\n"
+        s += self._tab*3 + "NBlocks = 1"
+        s += "\n"
+        s += self._tab*3 + "BlockSpecies = {}".format(bead_name_list.index('D4') + 1)
+        s += "\n"
+        s += self._tab*3 + "NPerBlock = 3"
+        s += "\n"
+        s += self._tab*2 + "}"
+        s += "\n"
+
+        # add vol and bead count
+        self._mol_num_dict["dodecane"] = self._num_dodecane_2bead
+        self._mol_vol_dict["dodecane"] = 3*self._force_field.get_bead_volume('D4')
+        self._mol_num_bead_dict["dodecane"] = 3
 
         return s
 
