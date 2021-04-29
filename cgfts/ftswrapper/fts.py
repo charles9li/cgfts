@@ -151,7 +151,7 @@ class FTS(object):
     def add_dodecane_3bead(self, num_mol=1):
         self._num_dodecane_3bead = num_mol
 
-    def create_input_file(self, filepath="params.in"):
+    def create_input_file(self, filepath="params.in", polyacrylate_version=1):
 
         # file header
         s = "InputFileVersion = {}".format(self._input_file_version)
@@ -159,13 +159,13 @@ class FTS(object):
         s += "\n"
 
         # add sections
-        s += self.models_string()
+        s += self.models_string(polyacrylate_version=polyacrylate_version)
         s += self.simulation_string()
         s += self.parallel_string()
 
         print(s, file=open(filepath, 'w'))
 
-    def models_string(self):
+    def models_string(self, polyacrylate_version=1):
 
         self._mol_vol_dict = OrderedDict()
         self._mol_num_bead_dict = OrderedDict()
@@ -226,7 +226,7 @@ class FTS(object):
             if self._one_bead:
                 s += self._create_polyacrylate_chain_1bead(sequence, chain_index, bead_names)
             else:
-                s += self._create_polyacrylate_chain(sequence, chain_index, bead_names)
+                s += self._create_polyacrylate_chain(sequence, chain_index, bead_names, version=polyacrylate_version)
             chain_index += 1
             
         # add 2-bead dodecane
