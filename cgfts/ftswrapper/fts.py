@@ -691,7 +691,7 @@ class FTS(object):
         s += "\n"
 
         # add vol and bead count
-        self._mol_num_dict["dodecane"] = self._num_dodecane_2bead
+        self._mol_num_dict["dodecane"] = self._num_dodecane_3bead
         self._mol_vol_dict["dodecane"] = 3*self._force_field.get_bead_volume('D4')
         self._mol_num_bead_dict["dodecane"] = 3
 
