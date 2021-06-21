@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 
-class BinarySet(object):
+class SortedBinarySet(object):
 
     def __init__(self, item1, item2):
-        self._items = {item1, item2}
+        self._items = sorted([item1, item2])
 
     @property
     def items(self):
@@ -15,6 +15,3 @@ class BinarySet(object):
 
     def __iter__(self):
         return iter(self._items)
-
-    def sorted(self):
-        return sorted(self._items)
