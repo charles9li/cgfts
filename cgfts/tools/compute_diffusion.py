@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from pymbar import timeseries
 from scipy.stats import linregress
 import matplotlib.pyplot as plt
 import mdtraj as md
@@ -43,6 +42,7 @@ class ComputeDiffusion(object):
         self._residue_masses[residue_name] = np.array(masses)
         
     def _compute_msd(self, tau):
+        from pymbar import timeseries
         xyz = self._traj.xyz
         delta = int(tau / self._dt)
         sd = np.sum((xyz[delta:] - xyz[:-delta])**2, axis=2)
