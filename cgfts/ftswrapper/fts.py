@@ -211,7 +211,7 @@ class FTS(object):
         s += self._tab + "chains {"
         s += "\n"
         n_chains = len(self._mol_num_dict.keys())
-        if self._num_dodecane_2bead > 0:
+        if self._num_dodecane_2bead > 0 or self._num_dodecane_3bead > 0:
             n_chains += 1
         s += self._tab*2 + "NChains = {}".format(n_chains)
         s += "\n"
