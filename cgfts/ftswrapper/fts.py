@@ -93,6 +93,30 @@ class FTS(object):
         return self._force_field
 
     @property
+    def dim(self):
+        return self._dim
+
+    @dim.setter
+    def dim(self, value):
+        self._dim = value
+
+    @property
+    def cell_lengths(self):
+        return self._cell_lengths
+
+    @cell_lengths.setter
+    def cell_lengths(self, value):
+        self._cell_lengths = value
+
+    @property
+    def npw(self):
+        return self._npw
+
+    @npw.setter
+    def npw(self, value):
+        self._npw = value
+
+    @property
     def read_input_fields(self):
         return self._read_input_fields
 
