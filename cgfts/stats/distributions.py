@@ -82,6 +82,23 @@ class LogNormal(_Distribution):
         _check_if_n_is_int(n)
         return np.exp(n * self.mu + n ** 2 * self.sigma**2 / 2)
 
+    def discrete_points(self, n):
+        _check_if_n_is_int(n)
+        if n == 1:
+            return [self.mean]
+        moment1 = self.mean
+        moment2 = self.moment(2)
+
+        def equations(p):
+            start, dx = p
+            a = np.linspace(start, start + (n - 1) * dx, num=n)
+            return [(moment1 - _discrete_moment(a, 1, self)) / moment1,
+                    (moment2 - _discrete_moment(a, 2, self)) / moment2]
+
+        x0 = np.array([self.mean / n, 2 / n * self.std])
+        sol = fsolve(equations, x0=x0)
+        return np.linspace(sol[0], sol[0] + (n - 1) * sol[1], num=n)
+
 
 class LogNormal2(_Distribution):
 
