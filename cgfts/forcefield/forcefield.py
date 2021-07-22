@@ -61,8 +61,10 @@ _SMEAR_LENGTHS = {'A4':     {313.15: 0.6070253571898435,
 # pressure corresponding to each temperature
 _DEFAULT_PRESSURES = {293.15: 4500.0,
                       313.15: 3866.4,
+                      343.15: 3286.1,
                       353.15: 3157.8,
-                      373.15: 2738.8}
+                      373.15: 2738.8,
+                      423.15: 1890.3}
 
 
 class BeadType(object):
