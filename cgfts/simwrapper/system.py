@@ -699,10 +699,10 @@ class SystemRun(BaseSystem):
                                           NStepsEquil=steps_equil, NStepsProd=steps_prod,
                                           WriteFreq=write_freq)
         else:
-            sim.export.omm.MakeLammpsTraj(self._system, DelTempFiles=False, Prefix="system_",
-                                          TrajFile="traj.lammpstrj", Verbose=True,
-                                          NStepsEquil=steps_equil, NStepsProd=steps_prod,
-                                          WriteFreq=write_freq)
+            sim.export.lammps.MakeLammpsTraj(self._system, DelTempFiles=False, Prefix="system_",
+                                             TrajFile="traj.lammpstrj", Verbose=True,
+                                             NStepsEquil=steps_equil, NStepsProd=steps_prod,
+                                             WriteFreq=write_freq)
 
 
 if __name__ == '__main__':
