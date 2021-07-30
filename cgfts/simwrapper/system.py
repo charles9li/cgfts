@@ -64,6 +64,7 @@ class BaseSystem(object):
         self._mol_type_dict = OrderedDict()
         self._mol_num_dict = OrderedDict()
         self._bond_types = []
+        self._ext_pot = None
 
     @property
     def system(self):
@@ -88,6 +89,9 @@ class BaseSystem(object):
     @property
     def cut(self):
         return self._cut
+
+    def add_sinusoidal(self, bead_type, u_const):
+        self._ext_pot = [bead_type, u_const]
 
     def create_system(self, *args, **kwargs):
         pass
@@ -131,7 +135,7 @@ class SystemCG(BaseSystem):
     def add_residue_map(self, residue_name, bead_name_list, num_atoms_per_bead, atom_masses=None):
         self._residue_map[residue_name] = (bead_name_list, num_atoms_per_bead, atom_masses)
 
-    def create_system(self, load=True):
+    def create_system(self, box_length=None, load=True):
         CG_atom_type_dict = {}
         system_index = 0
         for traj in self._traj_list:
@@ -244,7 +248,10 @@ class SystemCG(BaseSystem):
             filename = "{}.lammpstrj".format("system")
             traj.save_lammpstrj(filename)
             Trj = sim.traj.Lammps(filename)
-            BoxL = traj.unitcell_lengths[0][0]
+            if box_length is None:
+                BoxL = traj.unitcell_lengths[0][0]
+            else:
+                BoxL = box_length
             MappedTrj = sim.traj.Mapped(Trj, Map, AtomNames=CGAtomNameList, BoxL=BoxL)
             print("finish mapping trajectory")
 
@@ -353,6 +360,12 @@ class SystemCG(BaseSystem):
                     #     if Label == fix[0]:
                     #         getattr(Bonded.Param, fix[1]).Fixed = fix[2]
                     ForceField.append(Bonded)
+
+            # add external potential
+            if self._ext_pot is not None:
+                Filter = sim.atomselect.PolyFilter([CG_atom_type_dict[self._ext_pot[0]]])
+                Sinusoidal = sim.potential.ExternalSinusoid(Sys, Filter=Filter, UConst=self._ext_pot[1], NPeriods=1.0, PlaneAxis=0)
+                ForceField.append(Sinusoidal)
 
             # add potentials to forcefield
             Sys.ForceField.extend(ForceField)
