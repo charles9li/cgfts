@@ -135,7 +135,7 @@ class SystemCG(BaseSystem):
     def add_residue_map(self, residue_name, bead_name_list, num_atoms_per_bead, atom_masses=None):
         self._residue_map[residue_name] = (bead_name_list, num_atoms_per_bead, atom_masses)
 
-    def create_system(self, box_length=None, load=True):
+    def create_system(self, box_length=None, ensemble='npt', load=True):
         CG_atom_type_dict = {}
         system_index = 0
         for traj in self._traj_list:
@@ -299,7 +299,8 @@ class SystemCG(BaseSystem):
 
             # Set system temperature and charges
             Sys.TempSet = self._temperature
-            Sys.PresSet = self._pressure
+            if ensemble == 'npt':
+                Sys.PresSet = self._pressure
             Sys.ForceField.Globals.Charge.Fixed = True
 
             # initialize force field
@@ -393,7 +394,8 @@ class SystemCG(BaseSystem):
             Int.Method.TimeStep = self._time_step
             Int.Method.Thermostat = Int.Method.ThermostatLangevin
             Int.Method.LangevinGamma = 1.0
-            Int.Method.Barostat = Int.Method.BarostatMonteCarlo
+            if ensemble == 'npt':
+                Int.Method.Barostat = Int.Method.BarostatMonteCarlo
 
             # create optimizer
             Map = sim.atommap.PosMap()
