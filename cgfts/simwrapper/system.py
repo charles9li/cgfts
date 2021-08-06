@@ -365,7 +365,8 @@ class SystemCG(BaseSystem):
             # add external potential
             if self._ext_pot is not None:
                 Filter = sim.atomselect.PolyFilter([CG_atom_type_dict[self._ext_pot[0]]])
-                Sinusoidal = sim.potential.ExternalSinusoid(Sys, Filter=Filter, UConst=self._ext_pot[1], NPeriods=1.0, PlaneAxis=0)
+                Sinusoidal = sim.potential.ExternalSinusoid(Sys, Label="sin_{}".format(self._ext_pot[0]), Filter=Filter,
+                                                            UConst=self._ext_pot[1], NPeriods=1.0, PlaneAxis=0)
                 ForceField.append(Sinusoidal)
 
             # add potentials to forcefield
