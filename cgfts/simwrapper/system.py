@@ -90,8 +90,8 @@ class BaseSystem(object):
     def cut(self):
         return self._cut
 
-    def add_sinusoidal(self, bead_type, u_const):
-        self._ext_pot = [bead_type, u_const]
+    def add_sinusoidal(self, bead_type, u_const, axis=0):
+        self._ext_pot = [bead_type, u_const, axis]
 
     def create_system(self, *args, **kwargs):
         pass
@@ -366,7 +366,8 @@ class SystemCG(BaseSystem):
             if self._ext_pot is not None:
                 Filter = sim.atomselect.PolyFilter([CG_atom_type_dict[self._ext_pot[0]]])
                 Sinusoidal = sim.potential.ExternalSinusoid(Sys, Label="sin_{}".format(self._ext_pot[0]), Filter=Filter,
-                                                            UConst=self._ext_pot[1], NPeriods=1.0, PlaneAxis=0)
+                                                            UConst=self._ext_pot[1], NPeriods=1.0,
+                                                            PlaneAxis=self._ext_pot[2])
                 ForceField.append(Sinusoidal)
 
             # add potentials to forcefield
