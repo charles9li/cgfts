@@ -686,6 +686,15 @@ class SystemRun(BaseSystem):
                                         Label=label)
             force_field.append(bonded)
 
+        # add external potential
+        if self._ext_pot is not None:
+            Filter = sim.atomselect.PolyFilter([self._bead_type_dict[self._ext_pot[0]]])
+            Sinusoidal = sim.potential.ExternalSinusoid(self._system, Label="sin_{}".format(self._ext_pot[0]),
+                                                        Filter=Filter,
+                                                        UConst=self._ext_pot[1], NPeriods=1.0,
+                                                        PlaneAxis=self._ext_pot[2])
+            force_field.append(Sinusoidal)
+
         # add potentials to force field
         self._system.ForceField.extend(force_field)
 
