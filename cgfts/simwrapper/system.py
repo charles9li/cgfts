@@ -557,6 +557,15 @@ class SystemRun(BaseSystem):
         self._mol_type_dict[tuple(bead_name_list)] = mol_type
         self._mol_num_dict[tuple(bead_name_list)] = num_mol
 
+    def add_dodecane_3bead(self, num_mol=1):
+        bead_name_list = ['D4', 'D4', 'D4']
+        mol_type = self._create_mol_type("dodecane", bead_name_list)
+        mol_type.Bond(0, 1)
+        mol_type.Bond(1, 2)
+        self._bond_types.append(tuple(['D4', 'D4', 'D4']))
+        self._mol_type_dict[tuple(bead_name_list)] = mol_type
+        self._mol_num_dict[tuple(bead_name_list)] = num_mol
+
     _MONOMER_TO_BEAD_NAME_1BEAD = {'A4': ['A4'],
                                    'A12': ['A12'],
                                    'mA12': ['mA12']}
@@ -595,6 +604,44 @@ class SystemRun(BaseSystem):
         curr_bead_name = None
         for i, monomer in enumerate(monomer_list):
             beads_in_monomer = self._MONOMER_TO_BEAD_NAME[monomer]
+            curr_bead_name = beads_in_monomer[0]
+            n_beads = len(beads_in_monomer)
+            for j in range(n_beads - 1):
+                bead_index_1 = curr + j
+                bead_index_2 = bead_index_1 + 1
+                mol_type.Bond(bead_index_1, bead_index_2)
+                bead_name_1 = beads_in_monomer[j]
+                bead_name_2 = beads_in_monomer[j+1]
+                bond_type = tuple(np.sort([bead_name_1, bead_name_2]))
+                if bond_type not in self._bond_types:
+                    self._bond_types.append(bond_type)
+            if prev is not None:
+                mol_type.Bond(prev, curr)
+                bond_type = tuple(np.sort([prev_bead_name, curr_bead_name]))
+                if bond_type not in self._bond_types:
+                    self._bond_types.append(bond_type)
+            prev_bead_name = curr_bead_name
+            prev = curr
+            curr += n_beads
+        self._mol_type_dict[tuple(monomer_list)] = mol_type
+        self._mol_num_dict[tuple(monomer_list)] = num_mol
+
+    _MONOMER_TO_BEAD_NAME_SREL3 = {'A4': ['Bpba', 'D4'],
+                                   'A12': ['Bpla', 'D4', 'D4', 'D4'],
+                                   'mA12': ['Bplma', 'D4', 'D4', 'D4']}
+
+    def add_polyacrylate_srel3(self, sequence, num_mol=1):
+        monomer_list = acrylate_sequence_to_list(sequence)
+        bead_name_list = []
+        for monomer in monomer_list:
+            bead_name_list.extend(self._MONOMER_TO_BEAD_NAME_SREL3[monomer])
+        mol_type = self._create_mol_type(sequence, bead_name_list)
+        prev = None
+        prev_bead_name = None
+        curr = 0
+        curr_bead_name = None
+        for i, monomer in enumerate(monomer_list):
+            beads_in_monomer = self._MONOMER_TO_BEAD_NAME_SREL3[monomer]
             curr_bead_name = beads_in_monomer[0]
             n_beads = len(beads_in_monomer)
             for j in range(n_beads - 1):
