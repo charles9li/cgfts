@@ -562,7 +562,7 @@ class SystemRun(BaseSystem):
         mol_type = self._create_mol_type("dodecane", bead_name_list)
         mol_type.Bond(0, 1)
         mol_type.Bond(1, 2)
-        self._bond_types.append(tuple(['D4', 'D4', 'D4']))
+        self._bond_types.append(tuple(['D4', 'D4']))
         self._mol_type_dict[tuple(bead_name_list)] = mol_type
         self._mol_num_dict[tuple(bead_name_list)] = num_mol
 
