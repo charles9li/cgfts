@@ -2,7 +2,6 @@ from __future__ import absolute_import, print_function
 
 import mdtraj as md
 import numba
-from numba.types import float64, int64
 import numpy as np
 
 
@@ -30,7 +29,7 @@ class FisherInformation(object):
         else:
             atom_2_indices = np.array([a.index for a in topology.atoms_by_name(atom_name_2)])
             same_bead_type = False
-        structure_function = _compute_helper(self._traj.xyz, self._traj.unitcell_vectors,
+        structure_function = _compute_helper(self._traj.xyz, self._traj.unitcell_lengths,
                                              atom_1_indices, atom_2_indices, same_bead_type)
 
         if save_files:
@@ -41,48 +40,63 @@ class FisherInformation(object):
 
     @staticmethod
     def _create_statistics_file(structure_function, atom_name_1, atom_name_2):
+        from pymbar import timeseries
         from scipy.stats import chi2
 
-        n = len(structure_function)
-        dof = n - 1
-        var = np.var(structure_function, ddof=1)
+        # total degrees of freedom
+        n_total = len(structure_function)
+
+        # find uncorrelated frames
+        indices = timeseries.subsampleCorrelatedData(structure_function)
+        sf_n = structure_function[indices]
+        n_uncorrelated = len(indices)
+        dof_uncorrelated = n_uncorrelated - 1
+
+        # variances
+        variance_unbiased = np.var(sf_n, ddof=1)
+        variance_mle = np.var(sf_n)
 
         output = ""
-        output += "num frames : {} \n".format(n)
-        output += "mean : {} \n".format(np.mean(structure_function))
-        output += "var (unbiased) : {} \n".format(var)
-        lower_bound = dof * var / chi2.ppf(0.975, dof)
-        upper_bound = dof * var / chi2.ppf(0.025, dof)
-        output += "95 % var bounds : {} , {} \n".format(lower_bound, upper_bound)
+        output += "num frames (total) : {} \n".format(n_total)
+        output += "num frames (uncorrelated) : {} \n".format(n_uncorrelated)
+        output += "mean : {} \n".format(np.mean(sf_n))
+        output += "variance (unbiased) : {} \n".format(variance_unbiased)
+        output += "variance (MLE) : {} \n".format(variance_mle)
+        lower_bound = dof_uncorrelated * variance_unbiased / chi2.ppf(0.975, dof_uncorrelated)
+        upper_bound = dof_uncorrelated * variance_unbiased / chi2.ppf(0.025, dof_uncorrelated)
+        output += "variance bounds (95% CI): {} , {} \n".format(lower_bound, upper_bound)
 
         with open("fisher_info_stats_{}_{}.txt".format(atom_name_1, atom_name_2), 'w') as f:
             f.write(output)
 
 
 @numba.jit(nopython=True, parallel=True)
-def _compute_helper(xyz, unitcell_vectors, atom_1_indices, atom_2_indices, same_bead_type):
+def _compute_helper(xyz, unitcell_lengths, atom_1_indices, atom_2_indices, same_bead_type):
+
+    # num frames
+    n_frames = xyz.shape[0]
 
     # set smear length
     smear_length = 0.5  # TODO: make this specifiable
+
     kappa = 1. / (4 * smear_length ** 2)
+    prefactor = (kappa / np.pi) ** 1.5
 
     # initialize structure function
-    structure_function = np.zeros(xyz.shape[0])
+    structure_function = np.zeros(n_frames)
 
-    for i in range(len(structure_function)):
-        xyz_i = xyz[i]
-        uc_vecs = unitcell_vectors[i]
-        uc_vecs_inv = np.linalg.inv(uc_vecs)
-        a1_indices = _determine_a1_indices(atom_1_indices, same_bead_type)
-        for j, a1 in enumerate(a1_indices):
-            a2_indices = _determine_a2_indices(atom_1_indices, atom_2_indices, j + 1, same_bead_type)
-            for k, a2 in enumerate(a2_indices):
-                r1 = xyz_i[a1]
-                r2 = xyz_i[a2]
-                r12 = r2 - r1
-                shift = np.round_(np.sum(uc_vecs_inv * r12, axis=1), 0, np.empty(3))
-                r12_min_image = r12 - np.sum(uc_vecs * shift, axis=1)
-                structure_function[i] += np.exp(- np.sum(r12_min_image ** 2) * kappa) * (kappa / np.pi) ** 1.5
+    a1_indices = _determine_a1_indices(atom_1_indices, same_bead_type)
+    for i, a1 in enumerate(a1_indices):
+        a2_indices = _determine_a2_indices(atom_1_indices, atom_2_indices, i + 1, same_bead_type)
+        for j, a2 in enumerate(a2_indices):
+            r1 = xyz[:, a1, :]
+            r2 = xyz[:, a2, :]
+            r12 = r2 - r1
+            r12_min_image = r12 - unitcell_lengths * np.round_(r12 / unitcell_lengths, 0, np.empty(r12.shape))
+            structure_function += np.exp(-np.sum(r12_min_image ** 2, axis=1) * kappa)
+
+    # multiply everything by prefactor
+    structure_function *= prefactor
 
     return structure_function
 
