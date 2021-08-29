@@ -20,7 +20,7 @@ class FisherInformation(object):
     def traj(self):
         return self._traj
 
-    def compute(self, atom_name_1, atom_name_2=None):
+    def compute(self, atom_name_1, atom_name_2=None, save_files=True):
         topology = self._traj.topology
         atom_1_indices = np.array([a.index for a in topology.atoms_by_name(atom_name_1)])
         if atom_name_2 is None or atom_name_1 == atom_name_2:
@@ -32,8 +32,31 @@ class FisherInformation(object):
             same_bead_type = False
         structure_function = _compute_helper(self._traj.xyz, self._traj.unitcell_vectors,
                                              atom_1_indices, atom_2_indices, same_bead_type)
-        np.save("structure_function_{}_{}".format(atom_name_1, atom_name_2), structure_function)
+
+        if save_files:
+            np.save("structure_function_{}_{}".format(atom_name_1, atom_name_2), structure_function)
+            self._create_statistics_file(structure_function, atom_name_1, atom_name_2)
+
         return structure_function
+
+    @staticmethod
+    def _create_statistics_file(structure_function, atom_name_1, atom_name_2):
+        from scipy.stats import chi2
+
+        n = len(structure_function)
+        dof = n - 1
+        var = np.var(structure_function, ddof=1)
+
+        output = ""
+        output += "num frames : {} \n".format(n)
+        output += "mean : {} \n".format(np.mean(structure_function))
+        output += "var (unbiased) : {} \n".format(var)
+        lower_bound = dof * var / chi2.ppf(0.975, dof)
+        upper_bound = dof * var / chi2.ppf(0.025, dof)
+        output += "95 % var bounds : {} , {} \n".format(lower_bound, upper_bound)
+
+        with open("fisher_info_stats_{}_{}.txt".format(atom_name_1, atom_name_2), 'w') as f:
+            f.write(output)
 
 
 @numba.jit(nopython=True, parallel=True)
