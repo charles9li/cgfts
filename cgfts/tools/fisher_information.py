@@ -19,7 +19,7 @@ class FisherInformation(object):
     def traj(self):
         return self._traj
 
-    def compute(self, atom_name_1, atom_name_2=None, save_files=True):
+    def compute(self, atom_name_1, atom_name_2=None, smear_length=0.5, save_files=True):
         topology = self._traj.topology
         atom_1_indices = np.array([a.index for a in topology.atoms_by_name(atom_name_1)])
         if atom_name_2 is None or atom_name_1 == atom_name_2:
@@ -30,7 +30,7 @@ class FisherInformation(object):
             atom_2_indices = np.array([a.index for a in topology.atoms_by_name(atom_name_2)])
             same_bead_type = False
         structure_function = _compute_helper(self._traj.xyz, self._traj.unitcell_lengths,
-                                             atom_1_indices, atom_2_indices, same_bead_type)
+                                             atom_1_indices, atom_2_indices, smear_length, same_bead_type)
 
         if save_files:
             np.save("structure_function_{}_{}".format(atom_name_1, atom_name_2), structure_function)
@@ -71,13 +71,10 @@ class FisherInformation(object):
 
 
 @numba.jit(nopython=True, parallel=True)
-def _compute_helper(xyz, unitcell_lengths, atom_1_indices, atom_2_indices, same_bead_type):
+def _compute_helper(xyz, unitcell_lengths, atom_1_indices, atom_2_indices, smear_length, same_bead_type):
 
     # num frames
     n_frames = xyz.shape[0]
-
-    # set smear length
-    smear_length = 0.5  # TODO: make this specifiable
 
     kappa = 1. / (4 * smear_length ** 2)
     prefactor = (kappa / np.pi) ** 1.5
