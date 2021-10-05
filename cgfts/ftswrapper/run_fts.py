@@ -119,19 +119,21 @@ class RunFTS(object):
         cwd = os.getcwd()
 
         # output file directory
-        output_file_directory = os.path.join(cwd, directory)
+        run_dir = os.path.join(cwd, directory)
 
         # output log path
-        output_log_path = os.path.join(output_file_directory, "output.log")
+        output_log_path = os.path.join(run_dir, "output.log")
 
         # input file path
-        input_file_path = os.path.join(output_file_directory, filename)
+        input_file_path = os.path.join(run_dir, filename)
 
         # PolyFTS path
         polyFTS_path = os.path.join(self.polyFTS_directory, "PolyFTS.x")
 
         # run
+        os.chdir(run_dir)
         os.system("{} {} > {}".format(polyFTS_path, input_file_path, output_log_path))
+        os.chdir(cwd)
 
 
 class _Cell(object):
