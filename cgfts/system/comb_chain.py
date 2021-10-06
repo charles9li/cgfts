@@ -80,14 +80,11 @@ class CombChain(_Molecule):
 
         bead_names = list(force_field.bead_names)
 
-        s = tab*2 + "chain{} {{".format(chain_index)
-        s += "\n"
-        s += tab*3 + "Label = {}".format(self.name)
-        s += "\n"
-        s += tab*3 + "Architecture = comb"
-        s += "\n"
-        s += tab*3 + "Statistics = FJC"
-        s += "\n"
+        s = tab*2 + "chain{} {{ \n".format(chain_index)
+        s += tab*3 + "Label = {} \n".format(self.name)
+        s += tab*3 + "Architecture = comb \n"
+        s += tab*3 + "Statistics = FJC \n"
+        s += tab*3 + "NumSideArmTypes = {} \n".format(self.n_side_arm_types)
         s += "\n"
 
         # create backbone section
