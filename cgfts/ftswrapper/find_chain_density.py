@@ -8,7 +8,7 @@ import numpy as np
 __all__ = ['find_chain_density']
 
 
-def find_chain_density(run_fts, target_pressure):
+def find_chain_density(run_fts, target_pressure, directory="find_chain_density"):
 
     # store current npw and read_input_fields of run_fts
     tmp_npw = run_fts.cell.npw
@@ -20,7 +20,7 @@ def find_chain_density(run_fts, target_pressure):
 
     # find pressure
     c_chain_density_a = run_fts.composition.c_chain_density
-    pressure_difference_a = _compute_pressure_difference(c_chain_density_a, target_pressure, run_fts)
+    pressure_difference_a = _compute_pressure_difference(c_chain_density_a, target_pressure, run_fts, directory)
 
     # opposite sign of pressure difference determines search direction
     search_dir = -np.sign(pressure_difference_a)
@@ -29,7 +29,8 @@ def find_chain_density(run_fts, target_pressure):
     c_chain_density_b = None
     while c_chain_density_b is None:
         c_chain_density_curr = c_chain_density_a + search_dir * 0.1
-        pressure_difference_curr = _compute_pressure_difference(c_chain_density_curr, target_pressure, run_fts)
+        pressure_difference_curr = _compute_pressure_difference(c_chain_density_curr, target_pressure, run_fts,
+                                                                directory)
         if np.sign(pressure_difference_curr) == np.sign(pressure_difference_a):
             c_chain_density_a = c_chain_density_curr
             pressure_difference_a = pressure_difference_curr
@@ -38,7 +39,7 @@ def find_chain_density(run_fts, target_pressure):
 
     # use Brent's method to find optimal chain density
     c_chain_density = brentq(_compute_pressure_difference, c_chain_density_a, c_chain_density_b,
-                             args=(target_pressure, run_fts))
+                             args=(target_pressure, run_fts, directory))
     run_fts.composition.c_chain_density = c_chain_density
 
     # restore npw and read_input_fields
@@ -49,8 +50,7 @@ def find_chain_density(run_fts, target_pressure):
     return c_chain_density
 
 
-def _compute_pressure_difference(c_chain_density, target_pressure, run_fts):
-    directory = "find_chain_density"
+def _compute_pressure_difference(c_chain_density, target_pressure, run_fts, directory):
     run_fts.composition.c_chain_density = c_chain_density
     run_fts.run(filename="params.in", directory=directory)
     operators_path = os.path.join(directory, "operators.dat")
