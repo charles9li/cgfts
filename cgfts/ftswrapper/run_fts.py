@@ -5,6 +5,7 @@ import os
 import numpy as np
 
 from cgfts.system import System
+from cgfts.utils import split_path
 
 __all__ = ['RunFTS']
 
@@ -104,7 +105,11 @@ class RunFTS(object):
 
         # make directory if it doesn't exist
         if not os.path.isdir(directory):
-            os.mkdir(directory)
+            split_dir = split_path(directory)
+            for i in range(len(split_dir)):
+                d = os.path.join(*split_dir[0:i+1])
+                if not os.path.exists(d):
+                    os.mkdir(d)
 
         # create parameters file
         print(s, file=open(os.path.join(directory, filename), 'w'))
