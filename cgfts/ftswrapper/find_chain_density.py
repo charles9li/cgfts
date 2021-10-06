@@ -10,6 +10,10 @@ __all__ = ['find_chain_density']
 
 def find_chain_density(run_fts, target_pressure):
 
+    # store current npw and read_input_fields of run_fts
+    tmp_npw = run_fts.cell.npw
+    tmp_read_input_fields = run_fts.init_fields.read_input_fields
+
     # running single point simulations
     run_fts.cell.npw = 1
     run_fts.init_fields.read_input_fields = False
@@ -33,7 +37,16 @@ def find_chain_density(run_fts, target_pressure):
             c_chain_density_b = c_chain_density_curr
 
     # use Brent's method to find optimal chain density
-    return brentq(_compute_pressure_difference, c_chain_density_a, c_chain_density_b, args=(target_pressure, run_fts))
+    c_chain_density = brentq(_compute_pressure_difference, c_chain_density_a, c_chain_density_b,
+                             args=(target_pressure, run_fts))
+    run_fts.composition.c_chain_density = c_chain_density
+
+    # restore npw and read_input_fields
+    run_fts.cell.npw = tmp_npw
+    run_fts.init_fields.read_input_fields = tmp_read_input_fields
+
+    # return
+    return c_chain_density
 
 
 def _compute_pressure_difference(c_chain_density, target_pressure, run_fts):
