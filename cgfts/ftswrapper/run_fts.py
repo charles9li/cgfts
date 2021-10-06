@@ -198,7 +198,7 @@ class _Cell(object):
         if self.space_group_name is not None:
             s += "\n"
             s += tab*3 + "SpaceGroupName = {} \n".format(self.space_group_name)
-        s += "Symmetrize = {} \n".format(self.symmetrize)
+        s += tab*3 + "Symmetrize = {} \n".format(self.symmetrize)
         s += tab*2 + "} \n"
         return s
 
