@@ -274,13 +274,13 @@ class ForceField(object):
                         else:
                             other_bead_name = bead_names[0]
                         if other_bead_name not in like_bead_names:
-                            kuhn_lengths[i] = p.Dist0 / np.sqrt(6)
+                            kuhn_lengths[i] = p.Dist0.value / np.sqrt(6)
 
         # catch any stragglers
         for i, bead_name in enumerate(self.bead_names):
             if kuhn_lengths[i] == 0:
                 for p in self.get_potentials_of_type("Bonded"):
                     if bead_name in list(p.bead_names):
-                        kuhn_lengths[i] = p.Dist0 / np.sqrt(6)
+                        kuhn_lengths[i] = p.Dist0.value / np.sqrt(6)
 
         return kuhn_lengths
