@@ -135,6 +135,40 @@ class RunFTS(object):
         os.system("{} {} > {}".format(polyFTS_path, input_file_path, output_log_path))
         os.chdir(cwd)
 
+    def run_mpi(self, filename="params.in", directory="run", num_processors=1):
+
+        if num_processors == 1:
+            self.run(filename=filename, directory=directory)
+        else:
+
+            raise(NotImplementedError("run_mpi method is not implemented for multiple processors"))
+        #
+        #     # set number of parallel processors
+        #     self.parallel.openmp_n_threads = num_processors
+        #
+        #     # create input file
+        #     self.create_input_file(filename=filename, directory=directory)
+        #
+        #     # get current working directory
+        #     cwd = os.getcwd()
+        #
+        #     # output file directory
+        #     run_dir = os.path.join(cwd, directory)
+        #
+        #     # output log path
+        #     output_log_path = os.path.join(run_dir, "output.log")
+        #
+        #     # input file path
+        #     input_file_path = os.path.join(run_dir, filename)
+        #
+        #     # PolyFTS path
+        #     polyFTS_path = os.path.join(self.polyFTS_directory, "PolyFTSPLL.x")
+        #
+        #     # run
+        #     os.chdir(run_dir)
+        #     os.system("{} {} > {}".format(polyFTS_path, input_file_path, output_log_path))
+        #     os.chdir(cwd)
+
 
 class _Cell(object):
 
@@ -144,6 +178,8 @@ class _Cell(object):
         self.cell_lengths = 10.
         self.cell_angles = 90
         self.npw = 32
+        self.space_group_name = None
+        self.symmetrize = "off"
 
     def to_PolyFTS(self, tab="  "):
         # cell
@@ -154,6 +190,10 @@ class _Cell(object):
         s += tab*3 + "CellLengths = {} \n".format(" ".join([str(float(self.cell_lengths))]*self.dim))
         s += tab*3 + "CellAngles = {} \n".format(" ".join([str(self.cell_angles)]*self.dim))
         s += tab*3 + "NPW = {} \n".format(" ".join([str(self.npw)]*self.dim))
+        if self.space_group_name is not None:
+            s += "\n"
+            s += tab*3 + "SpaceGroupName = {} \n".format(self.space_group_name)
+        s += "Symmetrize = {} \n".format(self.symmetrize)
         s += tab*2 + "} \n"
         return s
 
@@ -279,6 +319,7 @@ class _Simulation(object):
         self.scft_force_stopping_tol = 5e-05
         self.scft_stress_stopping_tol = 0.0001
         self.variable_cell = False
+        self.cell_update = None
         self.IO = _IO()
 
     def to_PolyFTS(self, tab="  "):
@@ -298,6 +339,8 @@ class _Simulation(object):
         s += tab + "SCFTStressStoppingTol = {} \n".format(self.scft_stress_stopping_tol)
         s += "\n"
         s += tab + "VariableCell = {} \n".format(str(self.variable_cell).lower())
+        if self.cell_update is not None:
+            s += tab + "CellUpdate = {} \n".format(self.cell_update)
         s += "\n"
 
         # IO
