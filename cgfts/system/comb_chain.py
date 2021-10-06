@@ -135,7 +135,7 @@ class CombChain(_Molecule):
             s += "\n"
             side_arm_index += 1
 
-        s += tab*2 + "}"
+        s += tab*2 + "} \n"
         s += "\n"
 
         return s
