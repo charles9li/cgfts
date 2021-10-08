@@ -324,7 +324,7 @@ class _Simulation(object):
         self.scft_force_stopping_tol = 5e-05
         self.scft_stress_stopping_tol = 0.0001
         self.variable_cell = False
-        self.cell_update = None
+        self.cell_updater = None
         self.IO = _IO()
 
     def to_PolyFTS(self, tab="  "):
@@ -344,8 +344,8 @@ class _Simulation(object):
         s += tab + "SCFTStressStoppingTol = {} \n".format(self.scft_stress_stopping_tol)
         s += "\n"
         s += tab + "VariableCell = {} \n".format(str(self.variable_cell).lower())
-        if self.cell_update is not None:
-            s += tab + "CellUpdate = {} \n".format(self.cell_update)
+        if self.cell_updater is not None:
+            s += tab + "CellUpdater = {} \n".format(self.cell_updater)
         s += "\n"
 
         # IO
