@@ -15,6 +15,8 @@ _TAB = "  "
 
 class RunFTS(object):
 
+    # __slots__ = ['polyFTS_directory', 'system', 'input_file_version', 'num_models']
+
     def __init__(self, system):
 
         self.polyFTS_directory = "~/code/PolyFTS_feature_linkers/bin/Release"
@@ -193,7 +195,10 @@ class _Cell(object):
         s += tab*3 + "CellScaling = {} \n".format(self.cell_scaling)
         # TODO: implement way to independently
         s += tab*3 + "CellLengths = {} \n".format(" ".join([str(float(self.cell_lengths))]*self.dim))
-        s += tab*3 + "CellAngles = {} \n".format(" ".join([str(self.cell_angles)]*self.dim))
+        if self.dim == 2:
+            s += tab*3 + "CellAngles = {} \n".format(self.cell_angles)
+        else:
+            s += tab*3 + "CellAngles = {} \n".format(" ".join([str(self.cell_angles)]*self.dim))
         s += tab*3 + "NPW = {} \n".format(" ".join([str(self.npw)]*self.dim))
         if self.space_group_name is not None:
             s += "\n"
