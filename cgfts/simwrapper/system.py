@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 from collections import defaultdict, OrderedDict
 import os
@@ -123,10 +123,11 @@ class SystemCG(BaseSystem):
     def systems(self):
         return self._systems
 
-    def add_trajectory(self, dcd_list, top, stride=1):
+    def add_trajectory(self, dcd_list, top, stride=1, t0=0):
         if isinstance(dcd_list, str):
             dcd_list = [dcd_list]
         traj_list = [md.load_dcd(dcd, top=top, stride=stride) for dcd in dcd_list]
+        traj_list[0] = traj_list[0][int(t0/stride)+1:]
         traj_union = md.join(traj_list)
         traj_union.xyz = traj_union.xyz / 10.
         traj_union.unitcell_lengths = traj_union.unitcell_lengths / 10.
