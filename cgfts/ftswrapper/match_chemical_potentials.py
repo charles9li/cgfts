@@ -54,5 +54,5 @@ def _compute_chemical_potential_differences(x0, target_chemical_potentials, run_
     # get chemical potentials from operators file
     operators_path = os.path.join(directory, "operators.dat")
     od = OperatorData(operators_path)
-    chemical_potentials = np.array([od.get_by_column_name('ChemicalPotential{}'.format(i+1) for i in range(len(target_chemical_potentials)))])
+    chemical_potentials = np.array([od.get_by_column_name('ChemicalPotential{}'.format(i+1))[-1] for i in range(len(target_chemical_potentials))])
     return chemical_potentials - target_chemical_potentials
