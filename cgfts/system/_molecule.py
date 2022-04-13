@@ -16,6 +16,9 @@ class _Molecule(object):
     def n_beads(self):
         raise NotImplementedError("'n_beads' property not implemented for base _Molecule class")
 
+    def to_graph(self, force_field):
+        pass
+
     def to_sim(self, force_field):
         pass
 

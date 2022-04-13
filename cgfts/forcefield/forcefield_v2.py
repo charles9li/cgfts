@@ -94,7 +94,7 @@ class ForceField(object):
         self._potentials = []
 
     @classmethod
-    def from_sim_ff_file(cls, filepath, kT):
+    def from_sim_ff_file(cls, filepath, kT=1.0):
 
         # initialize force field
         ff = cls(kT)

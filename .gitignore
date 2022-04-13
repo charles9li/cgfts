@@ -6,7 +6,7 @@ cgfts.iml
 plots
 
 # old files
-old/*
+old
 
 # pyc files
 *.pyc
