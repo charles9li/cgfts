@@ -11,29 +11,31 @@ class System(object):
 
     def __init__(self, kT=1.0, pressure=None):
         self._force_field = ForceField(kT=kT)
-        self._molecules_types = OrderedDict()
-        self._molecules_nums = {}
+        self._molecule_types = OrderedDict()
+        self._molecule_nums = {}
         self.kT = kT
         self.pressure = pressure
+        self.dim = 3
+        self.box_lengths = None
 
     def add_molecule_type(self, molecule_type, num=1):
         # TODO: check if molecule already exists in system
-        self._molecules_types[molecule_type.name] = molecule_type
-        self._molecules_nums[molecule_type.name] = num
+        self._molecule_types[molecule_type.name] = molecule_type
+        self._molecule_nums[molecule_type.name] = num
 
     def set_molecule_num(self, molecule_name, num):
         # TODO: check if molecule name exists
         # TODO: check if num is a number
-        self._molecules_nums[molecule_name] = num
+        self._molecule_nums[molecule_name] = num
 
     @property
     def molecule_types(self):
-        return iter(self._molecules_types.values())
+        return iter(self._molecule_types.values())
 
     @property
     def molecule_nums(self):
-        for key in self._molecules_types.keys():
-            yield self._molecules_nums[key]
+        for key in self._molecule_types.keys():
+            yield self._molecule_nums[key]
 
     @property
     def kT(self):
@@ -75,13 +77,13 @@ class System(object):
         import sim
 
         # initialize sim_System
-        sim_World = sim.chem.World(list(self._molecules_types.values()), Dim=3, Units=sim.units.DimensionlessUnits)
+        sim_World = sim.chem.World(list(self._molecule_types.values()), Dim=3, Units=sim.units.DimensionlessUnits)
         sim_System = sim.system.System(sim_World, Name="system")
 
         # add molecules to sim_System
-        for key, val in self._molecules_nums.items():
+        for key, val in self._molecule_nums.items():
             for _ in val:
-                sim_System += self._molecules_types[key].to_sim().New()
+                sim_System += self._molecule_types[key].to_sim().New()
 
         # TODO: set system box length
 

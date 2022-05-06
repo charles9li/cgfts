@@ -5,6 +5,8 @@ import os
 from scipy.optimize import brentq
 import numpy as np
 
+from .operator_data import OperatorData
+
 __all__ = ['find_chain_density']
 
 
@@ -66,5 +68,5 @@ def _compute_pressure_difference(c_chain_density, target_pressure, run_fts, dire
 
     # get pressure from operators file
     operators_path = os.path.join(directory, "operators.dat")
-    operators = np.loadtxt(operators_path)
-    return operators[-1, 2] - target_pressure
+    od = OperatorData(operators_path)
+    return od.get_by_column_name('Pressure')[-1] - target_pressure

@@ -41,6 +41,7 @@ _TEMPERATURE_CONVERSION_FACTOR = R / 1.0e3
 # pressure corresponding to each temperature
 _DEFAULT_PRESSURES = {293.15: 4500.0,
                       313.15: 3866.4,
+                      333.15: 3540.7,
                       343.15: 3286.1,
                       353.15: 3157.8,
                       363.15: 2972.4,
@@ -666,6 +667,36 @@ class SystemRun(BaseSystem):
             curr += n_beads
         self._mol_type_dict[tuple(monomer_list)] = mol_type
         self._mol_num_dict[tuple(monomer_list)] = num_mol
+
+    def add_pba_graft_pla(self, N_ba, N_la, graft_spacing, num_mol=1):
+        n_grafts = int(N_ba / graft_spacing)
+        bead_name_list = N_ba * self._MONOMER_TO_BEAD_NAME_SREL3['A4'] + n_grafts * N_la * self._MONOMER_TO_BEAD_NAME_SREL3['A12']
+        mol_type = self._create_mol_type("branched", bead_name_list)
+        for i in range(N_ba):
+            mol_type.Bond(i*2, i*2+1)
+            if i > 0:
+                mol_type.Bond(i*2, (i-1)*2)
+        i_bead = 2 * N_ba
+        graft_point = graft_spacing // 2
+        while graft_point < N_ba:
+            prev_monomer_backbone_bead = graft_point * 2
+            for _ in range(N_la):
+                curr_monomer_backbone_bead = i_bead
+                i_bead += 1
+                for _ in range(3):
+                    mol_type.Bond(i_bead, i_bead-1)
+                    i_bead += 1
+                mol_type.Bond(prev_monomer_backbone_bead, curr_monomer_backbone_bead)
+                prev_monomer_backbone_bead = curr_monomer_backbone_bead
+            graft_point += graft_spacing
+
+        bond_types = [['Bpba', 'Bpba'], ['Bpba', 'Bpla'], ['Bpla', 'Bpla'], ['Bpba', 'D4'], ['Bpla', 'D4'], ['D4', 'D4']]
+        for bond_type in map(lambda x: tuple(np.sort(x)), bond_types):
+            if bond_type not in self._bond_types:
+                self._bond_types.append(bond_type)
+
+        self._mol_type_dict[tuple(bead_name_list)] = mol_type
+        self._mol_num_dict[tuple(bead_name_list)] = num_mol
 
     def add_pba_partial_side_chain(self, num_backbone=5, num_side_chain=5, num_mol=1):
         bead_name_list = ['Bpba']*num_backbone + ['C4']*num_side_chain

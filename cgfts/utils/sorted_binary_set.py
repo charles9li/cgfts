@@ -11,7 +11,13 @@ class SortedBinarySet(object):
         return self._items
 
     def __eq__(self, other):
-        return self.items == other.items
+        for i, j in zip(self.items, other.items):
+            if i != j:
+                return False
+        return True
 
     def __iter__(self):
         return iter(self._items)
+
+    def __hash__(self):
+        return hash(tuple(self._items))

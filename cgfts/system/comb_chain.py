@@ -55,6 +55,39 @@ class CombChain(_Molecule):
             n += self.get_side_arm_type(i).n_beads * len(self.get_side_arm_grafting_indices(i))
         return n
 
+    def to_graph(self, force_field):
+        import networkx as nx
+
+        # initialize graph
+        G = nx.Graph()
+
+        # compute kuhn lengths
+        kuhn_lengths = force_field._determine_kuhn_lengths()
+        bead_types = list(force_field.bead_types)
+
+        # add backbone beads
+        curr_bead_index = 0
+        for bead_name in self._backbone_bead_names:
+            G.add_node(curr_bead_index, name=bead_name)
+            if curr_bead_index > 0:
+                b = kuhn_lengths[bead_types.index(bead_name)]
+                G.add_edge(curr_bead_index, curr_bead_index - 1, weight=b)
+            curr_bead_index += 1
+
+        # add beads from each side chain
+        for (sat, sagi) in zip(self._side_arm_types, self.side_arm_grafting_indices):
+            for gi in sagi:
+                for i, sat_bead_name in enumerate(sat.beads):
+                    G.add_node(curr_bead_index, name=sat_bead_name)
+                    b = kuhn_lengths[bead_types.index(sat_bead_name)]
+                    if i == 0:
+                        G.add_edge(curr_bead_index, gi, weight=b)
+                    else:
+                        G.add_edge(curr_bead_index, curr_bead_index - 1, weight=b)
+                    curr_bead_index += 1
+
+        return G
+
     def to_sim(self, force_field):
         import sim
         curr_bead_index = 0

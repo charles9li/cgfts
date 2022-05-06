@@ -23,6 +23,23 @@ class LinearChain(_Molecule):
     def n_beads(self):
         return len(self._beads)
 
+    def to_graph(self, force_field):
+        import networkx as nx
+
+        # initialize graph
+        G = nx.Graph()
+
+        # compute kuhn lengths
+        kuhn_lengths = force_field._determine_kuhn_lengths()
+        bead_types = list(force_field.bead_types)
+
+        # create graph
+        for i, bead_name in enumerate(self._beads):
+            G.add_node(i, name=bead_name)
+            if i > 0:
+                b = kuhn_lengths[bead_types.index(bead_name)]
+                G.add_edge(i, i - 1, weight=b)
+
     def to_sim(self, force_field):
         import sim
         sim_AtomTypes = [force_field.get_bead_type(bn).to_sim() for bn in self._beads]
